@@ -106,7 +106,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)msvc\lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libassd.lib;AviSynth.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libassd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(ProjectDir)src\assrender.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -123,7 +123,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)msvc\lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libassd.lib;AviSynth.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libassd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(ProjectDir)src\assrender64.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -144,7 +144,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)msvc\lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libass.lib;AviSynth.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libass.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(ProjectDir)src\assrender.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -165,7 +165,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)msvc\lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libass.lib;AviSynth.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libass.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(ProjectDir)src\assrender64.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>

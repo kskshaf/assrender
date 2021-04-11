@@ -888,66 +888,6 @@ void apply_y(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_t wi
   }
 }
 
-AVS_VideoFrame* AVSC_CC assrender_get_frame(AVS_FilterInfo* p, int n)
-{
-    udata* ud = (udata*)p->user_data;
-    ASS_Image* img;
-    AVS_VideoFrame* src;
-
-    int64_t ts;
-    int changed;
-
-    src = avs_get_frame(p->child, n);
-
-    avs_make_writable(p->env, &src);
-
-    if (!ud->isvfr) {
-        // it’s a casting party!
-        ts = (int64_t)n * (int64_t)1000 * (int64_t)p->vi.fps_denominator / (int64_t)p->vi.fps_numerator;
-    } else {
-        ts = ud->timestamp[n];
-    }
-
-    img = ass_render_frame(ud->ass_renderer, ud->ass, ts, &changed);
-
-    if (img) {
-        uint32_t height, width, pitch[2];
-        uint8_t* data[3];
-
-        if (avs_is_planar(&p->vi) && !ud->greyscale) {
-          if (avs_is_rgb(&p->vi)) {
-            // planar RGB as 444
-            data[0] = avs_get_write_ptr_p(src, AVS_PLANAR_R);
-            data[1] = avs_get_write_ptr_p(src, AVS_PLANAR_G);
-            data[2] = avs_get_write_ptr_p(src, AVS_PLANAR_B);
-            pitch[0] = avs_get_pitch(src); 
-          }
-          else {
-            data[0] = avs_get_write_ptr_p(src, AVS_PLANAR_Y);
-            data[1] = avs_get_write_ptr_p(src, AVS_PLANAR_U);
-            data[2] = avs_get_write_ptr_p(src, AVS_PLANAR_V);
-            pitch[0] = avs_get_pitch_p(src, AVS_PLANAR_Y);
-            pitch[1] = avs_get_pitch_p(src, AVS_PLANAR_U);
-          }
-        }
-        else {
-          data[0] = avs_get_write_ptr(src);
-          pitch[0] = avs_get_pitch(src);
-        }
-
-        height = p->vi.height;
-        width = p->vi.width;
-
-        if (changed) {
-            memset(ud->sub_img[0], 0x00, height * width * ud->pixelsize);
-            ud->f_make_sub_img(img, ud->sub_img, width, ud->bits_per_pixel, ud->rgb_fullscale, &ud->mx);
-        }
-
-        ud->apply(ud->sub_img, data, pitch, width, height);
-    }
-
-    return src;
-}
 const VSFrameRef* VS_CC assrender_get_frame_vs(int n, int activationReason, void** instanceData, void** frameData, VSFrameContext* frameCtx, VSCore* core, const VSAPI* vsapi) {
     const VS_FilterInfo* p = *instanceData;
     if (activationReason == arInitial) {

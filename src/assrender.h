@@ -6,12 +6,7 @@
 #include <math.h>
 #include <string.h>
 #include <ass/ass.h>
-#include "avs/config.h"
-#ifdef AVS_WINDOWS
-#include "avisynth_c.h"
-#else
-#include <avisynth/avisynth_c.h>
-#endif
+#include <stdbool.h>
 #include "VapourSynth.h"
 #include "VSHelper.h"
 
