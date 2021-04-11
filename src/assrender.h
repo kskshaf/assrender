@@ -12,6 +12,8 @@
 #else
 #include <avisynth/avisynth_c.h>
 #endif
+#include "VapourSynth.h"
+#include "VSHelper.h"
 
 #if defined(_MSC_VER)
 #define __NO_ISOCEXT
@@ -65,5 +67,9 @@ typedef struct {
     int rgb_fullscale;
     int greyscale;
 } udata;
-
+typedef struct {
+    VSNodeRef* node;
+    const VSVideoInfo* vi;
+    void* user_data;
+} VS_FilterInfo;
 #endif

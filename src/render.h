@@ -45,5 +45,6 @@ void apply_y(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width,
 void apply_yv411(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
 
 AVS_VideoFrame* AVSC_CC assrender_get_frame(AVS_FilterInfo* p, int n);
+const VSFrameRef* VS_CC assrender_get_frame_vs(int n, int activationReason, void** instanceData, void** frameData, VSFrameContext* frameCtx, VSCore* core, const VSAPI* vsapi);
 
 #endif

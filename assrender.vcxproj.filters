@@ -54,5 +54,8 @@
     <None Include="src\assrender.def">
       <Filter>Include</Filter>
     </None>
+    <None Include="src\assrender64.def">
+      <Filter>Include</Filter>
+    </None>
   </ItemGroup>
 </Project>
