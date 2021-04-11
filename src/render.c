@@ -900,7 +900,7 @@ const VSFrameRef* VS_CC assrender_get_frame_vs(int n, int activationReason, void
         int64_t ts;
         int changed;
 
-        const VSFrameRef* src = vsapi->getFrameFilter(n, p->node, frameCtx);
+        VSFrameRef* src = vsapi->getFrameFilter(n, p->node, frameCtx);
 
         if (!ud->isvfr) {
             // it’s a casting party!

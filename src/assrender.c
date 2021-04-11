@@ -53,7 +53,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     int debuglevel = vsapi->propGetInt(in, "debuglevel", 0, &err);
     const char* fontdir = vsapi->propGetData(in, "fontdir", 0, &err);
     if (err) 
-#ifdef AVS_WINDOWS
+#ifdef _WINDOWS
         fontdir = "";
 #else
         fontdir = "/usr/share/fonts";
@@ -259,12 +259,14 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         data->apply = apply_yuv422;
         break;
     case pfYUV444P8:
+    case pfRGB24:
         data->apply = apply_yv24;
         break;
     case pfYUV444P10:
     case pfYUV444P12:
     case pfYUV444P14:
     case pfYUV444P16:
+    case pfRGB48:
         data->apply = apply_yuv444;
         break;
     case pfGray8:
@@ -273,11 +275,6 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     case pfGray16:
         data->apply = apply_y;
         break;
-    case pfRGB24:
-        data->apply = apply_rgb;
-        break;
-    case pfRGB48:
-        data->apply = apply_rgb48;
     default:
         vsapi->setError(out, "AssRender: unsupported pixel type");
         return;
