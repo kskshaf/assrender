@@ -54,7 +54,7 @@ AVS_Value AVSC_CC assrender_create(AVS_ScriptEnvironment* env, AVS_Value args,
                      avs_as_int(avs_array_elt(args, 13)) : 0;
     const char* fontdir = avs_as_string(avs_array_elt(args, 14)) ?
 #ifdef AVS_WINDOWS
-        avs_as_string(avs_array_elt(args, 14)) : "C:/Windows/Fonts";
+        avs_as_string(avs_array_elt(args, 14)) : "";
 #else
         avs_as_string(avs_array_elt(args, 14)) : "/usr/share/fonts";
 #endif
@@ -407,19 +407,20 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     int bottom = vsapi->propGetInt(in, "bottom", 0, &err);
     int left = vsapi->propGetInt(in, "left", 0, &err);
     int right = vsapi->propGetInt(in, "right", 0, &err);
-    const char* cs = vsapi->propGetData(in, "charset", 0, &err) ?
-        vsapi->propGetData(in, "charset", 0, &err) : "UTF-8";
+    const char* cs = vsapi->propGetData(in, "charset", 0, &err);
+    if (err) cs = "UTF-8";
     int debuglevel = vsapi->propGetInt(in, "debuglevel", 0, &err);
-    const char* fontdir = vsapi->propGetData(in, "fontdir", 0, &err) ?
+    const char* fontdir = vsapi->propGetData(in, "fontdir", 0, &err);
+    if (err) 
 #ifdef AVS_WINDOWS
-        vsapi->propGetData(in, "fontdir", 0, &err) : "C:/Windows/Fonts";
+        fontdir = "";
 #else
-        vsapi->propGetData(in, "fontdir", 0, &err) : "/usr/share/fonts";
+        fontdir = "/usr/share/fonts";
 #endif
-    const char* srt_font = vsapi->propGetData(in, "srt_font", 0, &err) ?
-        vsapi->propGetData(in, "srt_font", 0, &err) : "sans-serif";
-    const char* colorspace = vsapi->propGetData(in, "colorspace", 0, &err) ?
-        vsapi->propGetData(in, "colorspace", 0, &err) : "";
+    const char* srt_font = vsapi->propGetData(in, "srt_font", 0, &err);
+    if (err) srt_font = "sans-serif";
+    const char* colorspace = vsapi->propGetData(in, "colorspace", 0, &err);
+    if (err) colorspace = "";
 
     char* tmpcsp = calloc(1, BUFSIZ);
     strncpy(tmpcsp, colorspace, BUFSIZ - 1);
@@ -662,7 +663,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     return;
 }
 void VS_CC VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction registerFunc, VSPlugin* plugin) {
-    configFunc("com.pinterf.assrender", "libass", "AssRender", VAPOURSYNTH_API_VERSION, 1, plugin);
+    configFunc("com.pinterf.assrender", "assrender", "AssRender", VAPOURSYNTH_API_VERSION, 1, plugin);
     registerFunc("TextSub",
         "clip:clip;"
         "file:data;"

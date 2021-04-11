@@ -1,3 +1,4 @@
+LIBRARY assrender
 EXPORTS
 	avisynth_c_plugin_init
 	VapourSynthPluginInit
