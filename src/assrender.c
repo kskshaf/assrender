@@ -3,6 +3,113 @@
 #include "sub.h"
 #include "timecodes.h"
 
+#if defined(_MSC_VER)
+#include <iconv.h>
+
+wchar_t* utf8_to_utf16le(const char* data, size_t size) {
+    iconv_t icdsc;
+    char* outbuf;
+
+    if ((icdsc = iconv_open("UTF-16LE", "UTF-8")) == (iconv_t)(-1)) {
+        return NULL;
+    }
+
+    {
+        size_t osize = size;
+        size_t ileft = size;
+        size_t oleft = size - 1;
+        char* ip;
+        char* op;
+        size_t rc;
+        int clear = 0;
+
+        outbuf = malloc(osize);
+        if (!outbuf)
+            goto out;
+        ip = data;
+        op = outbuf;
+
+        while (1) {
+            if (ileft)
+                rc = iconv(icdsc, &ip, &ileft, &op, &oleft);
+            else {              // clear the conversion state and leave
+                clear = 1;
+                rc = iconv(icdsc, NULL, NULL, &op, &oleft);
+            }
+            if (rc == (size_t)(-1)) {
+                if (errno == E2BIG) {
+                    size_t offset = op - outbuf;
+                    char* nbuf = realloc(outbuf, osize + size);
+                    if (!nbuf) {
+                        free(outbuf);
+                        outbuf = 0;
+                        goto out;
+                    }
+                    outbuf = nbuf;
+                    op = outbuf + offset;
+                    osize += size;
+                    oleft += size;
+                }
+                else {
+                    free(outbuf);
+                    outbuf = NULL;
+                    goto out;
+                }
+            }
+            else if (clear)
+                break;
+        }
+        outbuf[osize - oleft - 1] = 0;
+    }
+
+out:
+    if (icdsc != (iconv_t)(-1)) {
+        (void)iconv_close(icdsc);
+    }
+
+    return outbuf;
+}
+
+char* read_file_bytes(FILE* fp, size_t* bufsize)
+{
+    int res;
+    long sz;
+    long bytes_read;
+    char* buf;
+    res = fseek(fp, 0, SEEK_END);
+    if (res == -1) {
+        fclose(fp);
+        return 0;
+    }
+
+    sz = ftell(fp);
+    rewind(fp);
+
+    buf = sz < SIZE_MAX ? malloc(sz + 1) : NULL;
+    if (!buf) {
+        fclose(fp);
+        return NULL;
+    }
+    assert(buf);
+    bytes_read = 0;
+    do {
+        res = fread(buf + bytes_read, 1, sz - bytes_read, fp);
+        if (res <= 0) {
+            fclose(fp);
+            free(buf);
+            return 0;
+        }
+        bytes_read += res;
+    } while (sz - bytes_read > 0);
+    buf[sz] = '\0';
+    fclose(fp);
+
+    if (bufsize)
+        *bufsize = sz;
+    return buf;
+}
+#endif
+
 void VS_CC assrender_destroy_vs(void* instanceData, VSCore* core, const VSAPI* vsapi) {
     const VS_FilterInfo* d = instanceData;
     udata* ud = d->user_data;
@@ -115,7 +222,17 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     if (!strcasecmp(strrchr(f, '.'), ".srt"))
         ass = parse_srt(f, data, srt_font);
     else {
+#if defined(_MSC_VER)
+        wchar_t* file_name = utf8_to_utf16le(f, strlen(f));
+        FILE* fp = _wfopen(file_name, L"rb");
+        free(file_name);
+        char* buf;
+        size_t bufsize;
+        buf = read_file_bytes(fp, &bufsize);
+        ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
+#else
         ass = ass_read_file(data->ass_library, (char*)f, (char*)cs);
+#endif
         ass_read_matrix(f, tmpcsp);
     }
 
@@ -129,7 +246,13 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 
     if (vfr) {
         int ver;
+#if defined(_MSC_VER)
+        wchar_t* file_name_vfr = utf8_to_utf16le(vfr, strlen(vfr));
+        FILE* fh = _wfopen(file_name_vfr, L"rb");
+        free(file_name_vfr);
+#else
         FILE* fh = fopen(vfr, "r");
+#endif
 
         if (!fh) {
             sprintf(e, "AssRender: could not read timecodes file '%s'", vfr);

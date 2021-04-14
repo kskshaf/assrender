@@ -29,8 +29,13 @@ ASS_Track* parse_srt(const char* f, udata* ud, const char* srt_font)
     char l[BUFSIZ], buf[BUFSIZ];
     int start[4], end[4], isn;
     ASS_Track* ass = ass_new_track(ud->ass_library);
+#if defined(_MSC_VER)
+    wchar_t* file_name_srt = utf8_to_utf16le(f, strlen(f));
+    FILE* fh = _wfopen(file_name_srt, L"rb");
+    free(file_name_srt);
+#else
     FILE* fh = fopen(f, "r");
-
+#endif
     if (!fh)
         return NULL;
 
