@@ -1,0 +1,35 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: prequisite
+      shell: cmd
+      run: |
+        git submodule update --init --recursive --remote
+        cd SMP\libass
+        git remote add libass-custom https://github.com/Masaiki/libass.git
+        git fetch libass-custom
+        git checkout SMP-for-assrender
+    - name: install yasm
+      shell: cmd
+      run: |
+        git clone https://github.com/ShiftMediaProject/VSYASM.git
+        .\VSYASM\install_script.bat
+    - name: add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: build
+      run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x86
+    - name: build-x64
+      run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x64
+    - name: copy
+      run: cmake -E copy "bin\Release_Win32\assrender.dll" dist\x86\assrender.dll && cmake -E copy "bin\Release_x64\assrender.dll" dist\x64\assrender.dll 
+    - name: upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: assrender_bin
+        path: dist
