@@ -1,11 +1,10 @@
 #include "sub.h"
 
-void ass_read_matrix(const char* f, char* csp) {
-    char buf[BUFSIZ];
-    FILE* fh = fopen(f, "r");
-
+void ass_read_matrix(FILE* fh, char* csp) {
     if (!fh)
         return;
+
+    char buf[BUFSIZ];
 
     while (fgets(buf, BUFSIZ - 1, fh) != NULL) {
         if (buf[0] == 0 || buf[0] == '\n' || buf[0] == '\r')
@@ -24,20 +23,14 @@ void ass_read_matrix(const char* f, char* csp) {
     fclose(fh);
 }
 
-ASS_Track* parse_srt(const char* f, udata* ud, const char* srt_font)
+ASS_Track* parse_srt(FILE* fh, udata* ud, const char* srt_font)
 {
+    if (!fh)
+        return NULL;
+
     char l[BUFSIZ], buf[BUFSIZ];
     int start[4], end[4], isn;
     ASS_Track* ass = ass_new_track(ud->ass_library);
-#if defined(_MSC_VER)
-    wchar_t* file_name_srt = utf8_to_utf16le(f, strlen(f));
-    FILE* fh = _wfopen(file_name_srt, L"rb");
-    free(file_name_srt);
-#else
-    FILE* fh = fopen(f, "r");
-#endif
-    if (!fh)
-        return NULL;
 
     sprintf(buf, "[V4+ Styles]\nStyle: Default,%s,20,&H1EFFFFFF,&H00FFFFFF,"
             "&H29000000,&H3C000000,0,0,0,0,100,100,0,0,1,1,1.2,2,10,10,"

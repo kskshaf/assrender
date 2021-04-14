@@ -67,6 +67,4 @@ typedef struct {
     const VSVideoInfo* vi;
     void* user_data;
 } VS_FilterInfo;
-wchar_t* utf8_to_utf16le(const char* data, size_t size);
-char* read_file_bytes(FILE* fp, size_t* bufsize);
 #endif

@@ -6,7 +6,7 @@
 #if defined(_MSC_VER)
 #include <iconv.h>
 
-wchar_t* utf8_to_utf16le(const char* data, size_t size) {
+static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
     iconv_t icdsc;
     char* outbuf;
 
@@ -70,7 +70,7 @@ out:
     return outbuf;
 }
 
-char* read_file_bytes(FILE* fp, size_t* bufsize)
+static char* read_file_bytes(FILE* fp, size_t* bufsize)
 {
     int res;
     long sz;
@@ -225,15 +225,17 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 #if defined(_MSC_VER)
         wchar_t* file_name = utf8_to_utf16le(f, strlen(f));
         FILE* fp = _wfopen(file_name, L"rb");
-        free(file_name);
-        char* buf;
         size_t bufsize;
-        buf = read_file_bytes(fp, &bufsize);
+        char* buf = read_file_bytes(fp, &bufsize);
         ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
+        fp = _wfopen(file_name, L"r");
+        ass_read_matrix(fp, tmpcsp);
+        free(file_name);
 #else
         ass = ass_read_file(data->ass_library, (char*)f, (char*)cs);
+        FILE* fp = fopen(f, "r");
+        ass_read_matrix(fp, tmpcsp);
 #endif
-        ass_read_matrix(f, tmpcsp);
     }
 
     if (!ass) {
