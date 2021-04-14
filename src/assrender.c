@@ -3,9 +3,63 @@
 #include "sub.h"
 #include "timecodes.h"
 
+static char* read_file_bytes(FILE* fp, size_t* bufsize)
+{
+    int res;
+    long sz;
+    long bytes_read;
+    char* buf;
+    res = fseek(fp, 0, SEEK_END);
+    if (res == -1) {
+        fclose(fp);
+        return 0;
+    }
+
+    sz = ftell(fp);
+    rewind(fp);
+
+    buf = sz < SIZE_MAX ? malloc(sz + 1) : NULL;
+    if (!buf) {
+        fclose(fp);
+        return NULL;
+    }
+    assert(buf);
+    bytes_read = 0;
+    do {
+        res = fread(buf + bytes_read, 1, sz - bytes_read, fp);
+        if (res <= 0) {
+            fclose(fp);
+            free(buf);
+            return 0;
+        }
+        bytes_read += res;
+    } while (sz - bytes_read > 0);
+    buf[sz] = '\0';
+    fclose(fp);
+
+    if (bufsize)
+        *bufsize = sz;
+    return buf;
+}
+
+static const char* detect_bom(const char* buf, const size_t bufsize) {
+    if (bufsize >= 4) {
+        if (!strncmp(buf, "\xef\xbb\xbf", 3))
+            return "UTF-8";
+        if (!strncmp(buf, "\x00\x00\xfe\xff", 4))
+            return "UTF-32BE";
+        if (!strncmp(buf, "\xff\xfe\x00\x00", 4))
+            return "UTF-32LE";
+        if (!strncmp(buf, "\xfe\xff", 2))
+            return "UTF-16BE";
+        if (!strncmp(buf, "\xff\xfe", 2))
+            return "UTF-16LE";
+    }
+    return "UTF-8";
+}
+
 #if defined(_MSC_VER)
 #include <iconv.h>
-
 static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
     iconv_t icdsc;
     char* outbuf;
@@ -69,45 +123,6 @@ out:
 
     return outbuf;
 }
-
-static char* read_file_bytes(FILE* fp, size_t* bufsize)
-{
-    int res;
-    long sz;
-    long bytes_read;
-    char* buf;
-    res = fseek(fp, 0, SEEK_END);
-    if (res == -1) {
-        fclose(fp);
-        return 0;
-    }
-
-    sz = ftell(fp);
-    rewind(fp);
-
-    buf = sz < SIZE_MAX ? malloc(sz + 1) : NULL;
-    if (!buf) {
-        fclose(fp);
-        return NULL;
-    }
-    assert(buf);
-    bytes_read = 0;
-    do {
-        res = fread(buf + bytes_read, 1, sz - bytes_read, fp);
-        if (res <= 0) {
-            fclose(fp);
-            free(buf);
-            return 0;
-        }
-        bytes_read += res;
-    } while (sz - bytes_read > 0);
-    buf[sz] = '\0';
-    fclose(fp);
-
-    if (bufsize)
-        *bufsize = sz;
-    return buf;
-}
 #endif
 
 void VS_CC assrender_destroy_vs(void* instanceData, VSCore* core, const VSAPI* vsapi) {
@@ -156,7 +171,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     int left = vsapi->propGetInt(in, "left", 0, &err);
     int right = vsapi->propGetInt(in, "right", 0, &err);
     const char* cs = vsapi->propGetData(in, "charset", 0, &err);
-    if (err) cs = "UTF-8";
+    if (err) cs = NULL;
     int debuglevel = vsapi->propGetInt(in, "debuglevel", 0, &err);
     const char* fontdir = vsapi->propGetData(in, "fontdir", 0, &err);
     if (err) 
@@ -227,13 +242,18 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         FILE* fp = _wfopen(file_name, L"rb");
         size_t bufsize;
         char* buf = read_file_bytes(fp, &bufsize);
+        if (cs == NULL) cs = detect_bom(buf, bufsize);
         ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
         fp = _wfopen(file_name, L"r");
         ass_read_matrix(fp, tmpcsp);
         free(file_name);
 #else
-        ass = ass_read_file(data->ass_library, (char*)f, (char*)cs);
         FILE* fp = fopen(f, "r");
+        size_t bufsize;
+        char* buf = read_file_bytes(fp, &bufsize);
+        if (cs == NULL) cs = detect_bom(buf, bufsize);
+        ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
+        fp = fopen(f, "r");
         ass_read_matrix(fp, tmpcsp);
 #endif
     }
