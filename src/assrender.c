@@ -133,6 +133,7 @@ static FILE* open(const char* f, const char* m)
     FILE* fp = _wfopen(file_name, mode);
     free(file_name);
     free(mode);
+    return fp;
 #else
     return fopen(f, m);
 #endif
