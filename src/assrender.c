@@ -71,7 +71,7 @@ static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
     {
         size_t osize = size;
         size_t ileft = size;
-        size_t oleft = size - 1;
+        size_t oleft = size - 2;
         char* ip;
         char* op;
         size_t rc;
@@ -113,7 +113,7 @@ static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
             else if (clear)
                 break;
         }
-        outbuf[osize - oleft - 1] = outbuf[osize - oleft] = 0;
+        outbuf[osize - oleft - 2] = outbuf[osize - oleft - 1] = 0;
     }
 
 out:
