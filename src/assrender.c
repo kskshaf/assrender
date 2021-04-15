@@ -83,7 +83,7 @@ static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
         ip = data;
         op = outbuf;
 
-        while (1) {
+        for(;;) {
             if (ileft)
                 rc = iconv(icdsc, &ip, &ileft, &op, &oleft);
             else {              // clear the conversion state and leave
@@ -96,7 +96,7 @@ static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
                     char* nbuf = realloc(outbuf, osize + size);
                     if (!nbuf) {
                         free(outbuf);
-                        outbuf = 0;
+                        outbuf = NULL;
                         goto out;
                     }
                     outbuf = nbuf;
