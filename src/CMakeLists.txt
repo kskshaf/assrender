@@ -37,17 +37,18 @@ if (MINGW)
   set_target_properties(${PluginName} PROPERTIES IMPORT_PREFIX "")
 endif()
 
-if (NOT WIN32 OR MINGW)
-  find_package(PkgConfig REQUIRED)
-  PKG_CHECK_MODULES(LIBASS REQUIRED libass>=0.12.0)
-  target_include_directories(${PluginName} PRIVATE ${LIBASS_INCLUDE_DIR})
-endif()
-
-#dedicated include dir for avisynth.h
+#dedicated include dir for VapourSynth.h
 target_include_directories(${ProjectName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+find_package(PkgConfig REQUIRED)
+PKG_CHECK_MODULES(LIBASS REQUIRED libass>=0.12.0)
+target_include_directories(${PluginName} PRIVATE ${LIBASS_INCLUDE_DIR})
+target_link_libraries(${ProjectName} ${LIBASS_LDFLAGS})
+
 if (WIN32)
-  target_link_libraries(${ProjectName} ${LIBASS_LDFLAGS})
+  find_package(Iconv REQUIRED)
+  target_include_directories(${PluginName} PRIVATE ${Iconv_INCLUDE_DIRS})
+  target_link_libraries(${ProjectName} ${Iconv_LIBRARIES})
 endif()
 
 include(GNUInstallDirs)
