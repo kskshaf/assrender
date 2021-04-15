@@ -125,6 +125,19 @@ out:
 }
 #endif
 
+static FILE* open(const char* f, const char* m)
+{
+#if defined(_MSC_VER)
+    wchar_t* file_name = utf8_to_utf16le(f, strlen(f));
+    wchar_t* mode = utf8_to_utf16le(m, strlen(m));
+    FILE* fp = _wfopen(file_name, mode);
+    free(file_name);
+    free(mode);
+#else
+    return fopen(f, m);
+#endif
+}
+
 void VS_CC assrender_destroy_vs(void* instanceData, VSCore* core, const VSAPI* vsapi) {
     const VS_FilterInfo* d = instanceData;
     udata* ud = d->user_data;
@@ -234,28 +247,18 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         return;
     }
 
-    if (!strcasecmp(strrchr(f, '.'), ".srt"))
-        ass = parse_srt(f, data, srt_font);
+    if (!strcasecmp(strrchr(f, '.'), ".srt")) {
+        FILE* fp = open(f, "r");
+        ass = parse_srt(fp, data, srt_font);
+    }
     else {
-#if defined(_MSC_VER)
-        wchar_t* file_name = utf8_to_utf16le(f, strlen(f));
-        FILE* fp = _wfopen(file_name, L"rb");
+        FILE* fp = open(f, "rb");
         size_t bufsize;
         char* buf = read_file_bytes(fp, &bufsize);
         if (cs == NULL) cs = detect_bom(buf, bufsize);
         ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
-        fp = _wfopen(file_name, L"r");
+        fp = open(f, "r");
         ass_read_matrix(fp, tmpcsp);
-        free(file_name);
-#else
-        FILE* fp = fopen(f, "r");
-        size_t bufsize;
-        char* buf = read_file_bytes(fp, &bufsize);
-        if (cs == NULL) cs = detect_bom(buf, bufsize);
-        ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
-        fp = fopen(f, "r");
-        ass_read_matrix(fp, tmpcsp);
-#endif
     }
 
     if (!ass) {
@@ -268,13 +271,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 
     if (vfr) {
         int ver;
-#if defined(_MSC_VER)
-        wchar_t* file_name_vfr = utf8_to_utf16le(vfr, strlen(vfr));
-        FILE* fh = _wfopen(file_name_vfr, L"rb");
-        free(file_name_vfr);
-#else
-        FILE* fh = fopen(vfr, "r");
-#endif
+        FILE* fh = open(vfr, "r");
 
         if (!fh) {
             sprintf(e, "AssRender: could not read timecodes file '%s'", vfr);
