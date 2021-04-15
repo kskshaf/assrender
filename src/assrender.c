@@ -113,7 +113,7 @@ static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
             else if (clear)
                 break;
         }
-        outbuf[osize - oleft - 1] = 0;
+        outbuf[osize - oleft - 1] = outbuf[osize - oleft] = 0;
     }
 
 out:
