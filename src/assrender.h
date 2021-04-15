@@ -8,7 +8,6 @@
 #include <ass/ass.h>
 #include <stdbool.h>
 #include "VapourSynth.h"
-#include "VSHelper.h"
 
 #if defined(_MSC_VER)
 #define __NO_ISOCEXT

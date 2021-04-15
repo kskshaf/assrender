@@ -23,7 +23,6 @@ static char* read_file_bytes(FILE* fp, size_t* bufsize)
         fclose(fp);
         return NULL;
     }
-    assert(buf);
     bytes_read = 0;
     do {
         res = fread(buf + bytes_read, 1, sz - bytes_read, fp);
@@ -58,7 +57,7 @@ static const char* detect_bom(const char* buf, const size_t bufsize) {
     return "UTF-8";
 }
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #include <iconv.h>
 static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
     iconv_t icdsc;
@@ -127,7 +126,7 @@ out:
 
 static FILE* open_utf8_filename(const char* f, const char* m)
 {
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     wchar_t* file_name = utf8_to_utf16le(f, strlen(f));
     wchar_t* mode = utf8_to_utf16le(m, strlen(m));
     FILE* fp = _wfopen(file_name, mode);

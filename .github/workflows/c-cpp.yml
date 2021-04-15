@@ -6,8 +6,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-20.04
     steps:
-      - name: checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: install deps
         run: |
           sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential g++ gcc libass-dev pkg-config
@@ -16,11 +15,29 @@ jobs:
           cmake -B build -S .
           cmake --build build --clean-first
 
+  build-mingw:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: base-devel git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libass
+          msystem: MINGW64
+          path-type: inherit
+      - name: build
+        run: |
+          cmake -G "MSYS Makefiles" -B build -S .
+          cmake --build build --clean-first
+
   build-win:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: prequisite
+      - name: install deps
         shell: cmd
         run: |
           git submodule update --init --recursive --remote
@@ -35,7 +52,7 @@ jobs:
           .\VSYASM\install_script.bat
       - name: add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
-      - name: build
+      - name: build-x86
         run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x86
       - name: build-x64
         run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x64
