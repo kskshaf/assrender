@@ -125,7 +125,7 @@ out:
 }
 #endif
 
-static FILE* open(const char* f, const char* m)
+static FILE* open_utf8_filename(const char* f, const char* m)
 {
 #if defined(_MSC_VER)
     wchar_t* file_name = utf8_to_utf16le(f, strlen(f));
@@ -249,16 +249,16 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     }
 
     if (!strcasecmp(strrchr(f, '.'), ".srt")) {
-        FILE* fp = open(f, "r");
+        FILE* fp = open_utf8_filename(f, "r");
         ass = parse_srt(fp, data, srt_font);
     }
     else {
-        FILE* fp = open(f, "rb");
+        FILE* fp = open_utf8_filename(f, "rb");
         size_t bufsize;
         char* buf = read_file_bytes(fp, &bufsize);
         if (cs == NULL) cs = detect_bom(buf, bufsize);
         ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
-        fp = open(f, "r");
+        fp = open_utf8_filename(f, "r");
         ass_read_matrix(fp, tmpcsp);
     }
 
@@ -272,7 +272,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 
     if (vfr) {
         int ver;
-        FILE* fh = open(vfr, "r");
+        FILE* fh = open_utf8_filename(vfr, "r");
 
         if (!fh) {
             sprintf(e, "AssRender: could not read timecodes file '%s'", vfr);
