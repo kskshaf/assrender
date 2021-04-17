@@ -1,12 +1,12 @@
-# AssRender
+# AssRender-Vapoursynth
 
-AssRender is an AviSynth plugin that renders ASS/SSA and SRT (without the HTML-like markup) subtitles. It uses libass to render the subtitles, which makes it the fastest and most correct ASS renderer for AviSynth.
+AssRender-Vapoursynth is an Vapoursynth plugin that renders ASS/SSA and SRT (without the HTML-like markup) subtitles, based on the source of pinterf's fork. It uses libass to render the subtitles, which makes it the fastest and most correct ASS renderer for Vapoursynth.
 
 This also means that it is much more picky about script syntax than VSFilter and friends, so keep that in mind before blaming the filter. Yes, people have reported a lot of errors that were actually the script author’s fault.
 
 ## Usage
 
-assrender(clip, string file, [string vfr, int hinting, float scale, float line_spacing, float dar, float sar, int top, int bottom, int left, int right, string charset, int debuglevel, string fontdir, string srt_font, string colorspace])
+assrender.TextSub(clip clip, string file, [string vfr, int hinting, float scale, float line_spacing, float dar, float sar, int top, int bottom, int left, int right, string charset, int debuglevel, string fontdir, string srt_font, string colorspace])
 
 `string file`
 
@@ -38,7 +38,7 @@ Margins. They will be added to the frame size and may be negative.
 	
 `string charset`
 
-Character set to use, in GNU iconv or enca format. Defaults to UTF-8.
+Character set to use, in GNU iconv or enca format. Defaults to detect the BOM and fallback to UTF-8 if BOM not found.
 Example enca format: `enca:pl:cp1250`
 (guess the encoding for Polish, fall back on `cp1250`)
 		
@@ -86,19 +86,10 @@ When no hint found in ASS script and 'colorspace' parameter is empty then the de
 
 * Clone repo
 
-  Clone https://github.com/pinterf/assrender from VS IDE or 
+  Clone https://github.com/Masaiki/assrender from VS IDE or 
 
-      git clone https://github.com/pinterf/assrender
+      git clone https://github.com/Masaiki/assrender
       git submodule update --init --recursive --remote
-
-* Prequisite: avisynth.lib versions (x86 and x64)
-  - When you have installed Avisynth through an installer and have installed FilterSDK  
-    get it from c:\Program Files (x86)\AviSynth+\FilterSDK\lib\x86 and x64
-  - Or get it from the 'filesonly' builds at Avisynth+ releases
-	  https://github.com/AviSynth/AviSynthPlus/releases
-
-  Copy lib files  to assrender\lib\x86-64\ and assrender\lib\x86-32\ 
-  32 and 64 bit versions respectively
 
 * Build:
   Open solution file from IDE
@@ -107,18 +98,10 @@ When no hint found in ASS script and 'colorspace' parameter is empty then the de
 
 * Clone repo
 
-      git clone https://github.com/pinterf/assrender
+      git clone https://github.com/Masaiki/assrender
         
   This environment is not using the git submodules, we need libass as a package.
   There is no need for submodule update.
-
-* Prequisite: avisynth.lib versions (x86 and x64)
-  - When you have installed Avisynth through an installer and have installed FilterSDK  
-    get it from c:\Program Files (x86)\AviSynth+\FilterSDK\lib\x86 and x64
-  - Or get it from the 'filesonly' builds at [Avisynth+ releases](https://github.com/AviSynth/AviSynthPlus/releases)
-
-  Copy lib files  to assrender\lib\x86-64\ and assrender\lib\x86-32\ 
-  32 and 64 bit versions respectively
 
 * Prequisite: libass package
 
@@ -173,7 +156,7 @@ When no hint found in ASS script and 'colorspace' parameter is empty then the de
 ### Linux
 * Clone repo
 
-      git clone https://github.com/pinterf/assrender
+      git clone https://github.com/Masaiki/assrender
       cd assrender
       cmake -B build -S .
       cmake --build build --clean-first
@@ -199,7 +182,7 @@ When no hint found in ASS script and 'colorspace' parameter is empty then the de
 * libass submodule used for msvc https://github.com/ShiftMediaProject/libass
 * Aegisub: https://github.com/Aegisub/Aegisub
 
-## Change log
+## Change log of pinterf's fork
 ### 0.35 (20210304)
 * Windows MSVC: Update to libass v0.15
   (git submodule update --init --recursive --remote)
