@@ -187,12 +187,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     if (err) cs = NULL;
     int debuglevel = vsapi->propGetInt(in, "debuglevel", 0, &err);
     const char* fontdir = vsapi->propGetData(in, "fontdir", 0, &err);
-    if (err) 
-#ifdef _WINDOWS
-        fontdir = "";
-#else
-        fontdir = "/usr/share/fonts";
-#endif
+    if (err) fontdir = "";
     const char* srt_font = vsapi->propGetData(in, "srt_font", 0, &err);
     if (err) srt_font = "sans-serif";
     const char* colorspace = vsapi->propGetData(in, "colorspace", 0, &err);
