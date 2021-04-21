@@ -1,3 +1,0 @@
-LIBRARY assrender
-EXPORTS
-	VapourSynthPluginInit

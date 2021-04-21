@@ -21,11 +21,7 @@ set(ASSRender_SRC
 if(WIN32)
     list(APPEND ASSRender_SRC "ASSRender.rc")
     if(NOT MINGW)
-        if (CMAKE_SIZEOF_VOID_P EQUAL 4)
-          list(APPEND ASSRender_SRC "assrender.def")
-        else()
-          list(APPEND ASSRender_SRC "assrender64.def")
-        endif()
+      list(APPEND ASSRender_SRC "assrender.def")
     endif()
 endif()
 

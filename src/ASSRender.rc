@@ -18,12 +18,12 @@ BEGIN
         BLOCK "040904B0"
         BEGIN
             VALUE "CompanyName",      ""
-            VALUE "FileDescription",  "a plugin for AviSynth to rend ASS/SSA subtitles using libass"
+            VALUE "FileDescription",  "a plugin for VapourSynth to rend ASS/SSA subtitles using libass"
             VALUE "FileVersion",      "0.35.0.0"
             VALUE "InternalName",     "ASSRENDER.DLL"
             VALUE "LegalCopyright",   ""
             VALUE "OriginalFilename", "LIBASSRENDER.DLL"
-            VALUE "ProductName",      "ASSRender plugin for AVISynth"
+            VALUE "ProductName",      "ASSRender plugin for VapourSynth"
             VALUE "ProductVersion",   "0.35.0.0"
         END
     END

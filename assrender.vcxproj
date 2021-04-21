@@ -124,7 +124,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)msvc\lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>libassd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>$(ProjectDir)src\assrender64.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>$(ProjectDir)src\assrender.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -166,7 +166,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)msvc\lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>libass.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>$(ProjectDir)src\assrender64.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>$(ProjectDir)src\assrender.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -186,7 +186,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\assrender.def" />
-    <None Include="src\assrender64.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
