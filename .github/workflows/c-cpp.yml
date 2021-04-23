@@ -45,11 +45,11 @@ jobs:
           git remote add libass-custom https://github.com/Masaiki/libass.git
           git fetch libass-custom
           git checkout SMP-for-assrender
-      - name: install yasm
+      - name: install nasm
         shell: cmd
         run: |
-          git clone https://github.com/ShiftMediaProject/VSYASM.git
-          .\VSYASM\install_script.bat
+          git clone https://github.com/ShiftMediaProject/VSNASM.git
+          .\VSNASM\install_script.bat
       - name: add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
       - name: build-x86
