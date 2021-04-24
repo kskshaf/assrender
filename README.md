@@ -50,7 +50,7 @@ How much crap assrender is supposed to spam to stderr.
 
 Additional font directory.
 Useful if you are lazy but want to keep your system fonts clean.
-Default value: C:/Windows/Fonts or /usr/share/fonts (Windows and linux respectively)
+Default value: `""`
 
 `string srt_font`
 
@@ -93,6 +93,11 @@ When no hint found in ASS script and 'colorspace' parameter is empty then the de
 
 * Build:
   Open solution file from IDE
+
+* Note:
+  if you are using libass from https://github.com/Masaiki/libass/tree/SMP-for-assrender (ShiftMediaProject/libass with latest commit of libass/libass and [directwrite: request font on demand](https://github.com/libass/libass/pull/477))
+  
+  install [VSNASM](https://github.com/ShiftMediaProject/VSNASM) instead to avoid asm compile error
 
 ### Windows GCC (mingw installed by msys2)
 
