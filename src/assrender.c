@@ -58,77 +58,20 @@ static const char* detect_bom(const char* buf, const size_t bufsize) {
 }
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
-#include <iconv.h>
-static wchar_t* utf8_to_utf16le(const char* data, size_t size) {
-    iconv_t icdsc;
-    char* outbuf;
-
-    if ((icdsc = iconv_open("UTF-16LE", "UTF-8")) == (iconv_t)(-1)) {
-        return NULL;
-    }
-
-    {
-        size_t osize = size;
-        size_t ileft = size;
-        size_t oleft = size - 2;
-        char* ip;
-        char* op;
-        size_t rc;
-        int clear = 0;
-
-        outbuf = malloc(osize);
-        if (!outbuf)
-            goto out;
-        ip = data;
-        op = outbuf;
-
-        for(;;) {
-            if (ileft)
-                rc = iconv(icdsc, &ip, &ileft, &op, &oleft);
-            else {              // clear the conversion state and leave
-                clear = 1;
-                rc = iconv(icdsc, NULL, NULL, &op, &oleft);
-            }
-            if (rc == (size_t)(-1)) {
-                if (errno == E2BIG) {
-                    size_t offset = op - outbuf;
-                    char* nbuf = realloc(outbuf, osize + size);
-                    if (!nbuf) {
-                        free(outbuf);
-                        outbuf = NULL;
-                        goto out;
-                    }
-                    outbuf = nbuf;
-                    op = outbuf + offset;
-                    osize += size;
-                    oleft += size;
-                }
-                else {
-                    free(outbuf);
-                    outbuf = NULL;
-                    goto out;
-                }
-            }
-            else if (clear)
-                break;
-        }
-        outbuf[osize - oleft - 2] = outbuf[osize - oleft - 1] = 0;
-    }
-
-out:
-    if (icdsc != (iconv_t)(-1)) {
-        (void)iconv_close(icdsc);
-    }
-
-    return outbuf;
+#include <windows.h>
+static wchar_t* utf8_to_utf16le(const char* data) {
+    const int out_size = MultiByteToWideChar(CP_UTF8, 0, data, -1, NULL, 0);
+    wchar_t* out = malloc(out_size * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, data, -1, out, out_size);
+    return out;
 }
 #endif
 
 static FILE* open_utf8_filename(const char* f, const char* m)
 {
 #if defined(_MSC_VER) || defined(__MINGW32__)
-    wchar_t* file_name = utf8_to_utf16le(f, strlen(f));
-    wchar_t* mode = utf8_to_utf16le(m, strlen(m));
+    wchar_t* file_name = utf8_to_utf16le(f);
+    wchar_t* mode = utf8_to_utf16le(m);
     FILE* fp = _wfopen(file_name, mode);
     free(file_name);
     free(mode);

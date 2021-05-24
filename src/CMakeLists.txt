@@ -41,12 +41,6 @@ PKG_CHECK_MODULES(LIBASS REQUIRED libass>=0.12.0)
 target_include_directories(${PluginName} PRIVATE ${LIBASS_INCLUDE_DIRS})
 target_link_libraries(${ProjectName} ${LIBASS_LINK_LIBRARIES})
 
-if (WIN32)
-  find_package(Iconv REQUIRED)
-  target_include_directories(${PluginName} PRIVATE ${Iconv_INCLUDE_DIRS})
-  target_link_libraries(${ProjectName} ${Iconv_LIBRARIES})
-endif()
-
 include(GNUInstallDirs)
 
 install(TARGETS ${ProjectName} LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/vapoursynth")
