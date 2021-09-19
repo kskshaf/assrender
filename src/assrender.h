@@ -3,10 +3,12 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <inttypes.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 #include <ass/ass.h>
-#include <stdbool.h>
 #include "VapourSynth.h"
 
 #if defined(_MSC_VER)

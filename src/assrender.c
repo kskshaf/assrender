@@ -81,6 +81,70 @@ static FILE* open_utf8_filename(const char* f, const char* m)
 #endif
 }
 
+static char* strrepl(const char* in, const char* str, const char* repl)
+{
+    size_t siz;
+    char* res, * outptr;
+    const char* inptr;
+    int count = 0;
+
+    inptr = in;
+
+    while ((inptr = strstr(inptr, str))) {
+        count++;
+        inptr++;
+    }
+
+    if (count == 0) {
+        size_t in_len = strlen(in);
+        res = malloc(in_len + 1);
+        memcpy(res, in, in_len + 1);
+        return res;
+    }
+
+    siz = (strlen(in) - strlen(str) * count + strlen(repl) * count) *
+        sizeof(char) + 1;
+
+#define VSMAX(a,b) ((a) > (b) ? (a) : (b))
+    res = malloc(VSMAX(siz, strlen(in) * sizeof(char) + 1));
+#undef VSMAX
+
+    strcpy(res, in);
+
+    outptr = res;
+    inptr = in;
+
+    while ((outptr = strstr(outptr, str)) && (inptr = strstr(inptr, str))) {
+        outptr[0] = '\0';
+        strcat(outptr, repl);
+        strcat(outptr, (inptr + strlen(str)));
+
+        outptr++;
+        inptr++;
+    }
+
+    return res;
+}
+static bool frameToTime(int frame, int64_t fpsNum, int64_t fpsDen, char* str, size_t str_size)
+{
+    int64_t timeint, time_ms;
+    time_t time_secs;
+    struct tm* ti;
+    if (frame != 0 && (INT64_MAX / fpsDen) < ((int64_t)frame * 100)) {
+        //Overflow would occur
+        return false;
+    }
+    else {
+        timeint = (int64_t)frame * 100 * fpsDen / fpsNum;
+    }
+    time_secs = timeint / 100;
+    time_ms = timeint % 100;
+    ti = gmtime(&time_secs);
+    snprintf(str, str_size, "%d:%02d:%02d.%02" PRIu64, ti->tm_hour, ti->tm_min, ti->tm_sec, time_ms);
+
+    return true;
+}
+
 void VS_CC assrender_destroy_vs(void* instanceData, VSCore* core, const VSAPI* vsapi) {
     const VS_FilterInfo* d = instanceData;
     udata* ud = d->user_data;
@@ -114,7 +178,6 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     char e[250];
     int err = 0;
 
-    const char* f = vsapi->propGetData(in, "file", 0, &err);
     const char* vfr = vsapi->propGetData(in, "vfr", 0, &err);
     int h = vsapi->propGetInt(in, "hinting", 0, &err);
     double scale = vsapi->propGetFloat(in, "scale", 0, &err);
@@ -153,11 +216,6 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     }
     */
 
-    if (!f) {
-        vsapi->setError(in, "AssRender: no input file specified");
-        return;
-    }
-
     switch (h) {
     case 0:
         hinting = ASS_HINTING_NONE;
@@ -185,22 +243,77 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         return;
     }
 
-    if (!strcasecmp(strrchr(f, '.'), ".srt")) {
-        FILE* fp = open_utf8_filename(f, "r");
-        ass = parse_srt(fp, data, srt_font);
+    if (!strcmp(userData, "TextSub")) {
+        const char* f = vsapi->propGetData(in, "file", 0, &err);
+        if (!f) {
+            vsapi->setError(in, "AssRender: no input file specified");
+            return;
+        }
+        if (!strcasecmp(strrchr(f, '.'), ".srt")) {
+            FILE* fp = open_utf8_filename(f, "r");
+            ass = parse_srt(fp, data, srt_font);
+        }
+        else {
+            FILE* fp = open_utf8_filename(f, "rb");
+            size_t bufsize;
+            char* buf = read_file_bytes(fp, &bufsize);
+            if (cs == NULL) cs = detect_bom(buf, bufsize);
+            ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
+            fp = open_utf8_filename(f, "r");
+            ass_read_matrix(fp, tmpcsp);
+        }
     }
-    else {
-        FILE* fp = open_utf8_filename(f, "rb");
-        size_t bufsize;
-        char* buf = read_file_bytes(fp, &bufsize);
-        if (cs == NULL) cs = detect_bom(buf, bufsize);
-        ass = ass_read_memory(data->ass_library, buf, bufsize, (char*)cs);
-        fp = open_utf8_filename(f, "r");
-        ass_read_matrix(fp, tmpcsp);
+    else {// if (!strcmp(userData, "Subtitle")){
+#define BUFFER_SIZE 16
+        const char* text = vsapi->propGetData(in, "text", 0, &err);
+        if (err) text = "";
+        const char* style = vsapi->propGetData(in, "style", 0, &err);
+        if (err) style = "sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1";
+        int startframe = vsapi->propGetInt(in, "start", 0, &err);
+        if (err) startframe = 0;
+        int endframe = vsapi->propGetInt(in, "end", 0, &err);
+        if (err) endframe = fi->vi->numFrames;
+
+        char* str, * text_copy, x[BUFFER_SIZE], y[BUFFER_SIZE], start[BUFFER_SIZE] = { 0 }, end[BUFFER_SIZE] = { 0 };
+        size_t siz;
+        const char* fmt = "[Script Info]\n"
+            "ScriptType: v4.00+\n"
+            "PlayResX: %s\n"
+            "PlayResY: %s\n"
+            "[V4+ Styles]\n"
+            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
+            "Style: Default,%s\n"
+            "[Events]\n"
+            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
+            "Dialogue: 0,%s,%s,Default,,0,0,0,,%s\n";
+
+        snprintf(x, BUFFER_SIZE, "%d", fi->vi->width);
+        snprintf(y, BUFFER_SIZE, "%d", fi->vi->height);
+
+        if (!frameToTime(startframe, fi->vi->fpsNum, fi->vi->fpsDen, start, BUFFER_SIZE) ||
+            !frameToTime(endframe, fi->vi->fpsNum, fi->vi->fpsDen, end, BUFFER_SIZE)) {
+            sprintf(e, "AssRender: Unable to calculate %s time", start[0] ? "end" : "start");
+            vsapi->setError(out, e);
+            return;
+        }
+
+        text_copy = strrepl(text, "\n", "\\N");
+
+        siz = (strlen(fmt) + strlen(x) + strlen(y) + strlen(style) + strlen(start) + strlen(end) + strlen(text_copy)) * sizeof(char);
+
+        str = malloc(siz);
+        snprintf(str, siz, fmt, x, y, style, start, end, text_copy);
+
+        free(text_copy);
+
+        ass = ass_read_memory(data->ass_library, str, siz, "UTF-8");
+
+        free(str);
+#undef BUFFER_SIZE
     }
 
     if (!ass) {
-        sprintf(e, "AssRender: unable to parse '%s'", f);
+        sprintf(e, "AssRender: unable to parse ass text");
         vsapi->setError(out, e);
         return;
     }
@@ -380,25 +493,35 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 
     return;
 }
+#define COMMON_PARAMS \
+        "vfr:data:opt;" \
+        "hinting:int:opt;" \
+        "scale:float:opt;" \
+        "line_spacing:float:opt;" \
+        "dar:float:opt;" \
+        "sar:float:opt;" \
+        "top:int:opt;" \
+        "bottom:int:opt;" \
+        "left:int:opt;" \
+        "right:int:opt;" \
+        "charset:data:opt;" \
+        "debuglevel:int:opt;" \
+        "fontdir:data:opt;" \
+        "srt_font:data:opt;" \
+        "colorspace:data:opt;",
 void VS_CC VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction registerFunc, VSPlugin* plugin) {
     configFunc("com.pinterf.assrender", "assrender", "AssRender", VAPOURSYNTH_API_VERSION, 1, plugin);
     registerFunc("TextSub",
         "clip:clip;"
         "file:data;"
-        "vfr:data:opt;"
-        "hinting:int:opt;"
-        "scale:float:opt;"
-        "line_spacing:float:opt;"
-        "dar:float:opt;"
-        "sar:float:opt;"
-        "top:int:opt;"
-        "bottom:int:opt;"
-        "left:int:opt;"
-        "right:int:opt;"
-        "charset:data:opt;"
-        "debuglevel:int:opt;"
-        "fontdir:data:opt;"
-        "srt_font:data:opt;"
-        "colorspace:data:opt;",
+        COMMON_PARAMS
         assrender_create_vs, "TextSub", plugin);
+    registerFunc("Subtitle",
+        "clip:clip;"
+        "text:data;"
+        "style:data:opt;"
+        "start:int:opt;"
+        "end:int:opt;"
+        COMMON_PARAMS
+        assrender_create_vs, "Subtitle", plugin);
 }
