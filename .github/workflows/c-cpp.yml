@@ -37,21 +37,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: install deps
+      - name: install submodules and nasm
         shell: cmd
         run: |
           git submodule update --init --recursive --remote
-          cd SMP\libass
-          git remote add libass-custom https://github.com/Masaiki/libass.git
-          git fetch libass-custom
-          git checkout SMP-for-assrender
-      - name: install nasm
-        shell: cmd
-        run: |
           git clone https://github.com/ShiftMediaProject/VSNASM.git
           .\VSNASM\install_script.bat
       - name: add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v1
       - name: build-x86
         run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x86
       - name: build-x64
