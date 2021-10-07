@@ -236,9 +236,9 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 
     data = malloc(sizeof(udata));
 
-    if (!init_ass(fi->vi->width, fi->vi->height, scale, line_spacing, dar, sar,
-        top, bottom, left, right, hinting, debuglevel, fontdir,
-        data)) {
+    if (!init_ass(fi->vi->width, fi->vi->height, scale, line_spacing,
+        hinting, dar, sar, top, bottom, left, right,
+        debuglevel, fontdir, data)) {
         vsapi->setError(out, "AssRender: failed to initialize");
         return;
     }
