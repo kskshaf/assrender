@@ -306,7 +306,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 
         free(text_copy);
 
-        ass = ass_read_memory(data->ass_library, str, siz, "UTF-8");
+        ass = ass_read_memory(data->ass_library, str, strlen(str), "UTF-8");
 
         free(str);
 #undef BUFFER_SIZE
