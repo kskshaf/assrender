@@ -266,12 +266,13 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     else {// if (!strcmp(userData, "Subtitle")){
 #define BUFFER_SIZE 16
         int ntext = vsapi->propNumElements(in, "text");
-        if (ntext < 1)
-            vsapi->setError(out, "No text to be rendered");
-        char **texts;
-        int *text_lengths;
-        texts = malloc(ntext * sizeof(char *));
-        text_lengths = malloc(ntext * sizeof(int));
+        if (ntext < 1) {
+            vsapi->setError(out, "AssRender: No text to be rendered");
+            return;
+        }
+        
+        char **texts = malloc(ntext * sizeof(char *));
+        int *text_lengths = malloc(ntext * sizeof(int));
         for (int i = 0; i < ntext; i++) {
             texts[i] = vsapi->propGetData(in, "text", i, &err);
             if (err) texts[i] = "";
@@ -282,8 +283,8 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         const char *style = vsapi->propGetData(in, "style", 0, &err);
         if (err) style = "sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1";
 
-        int *startframes, *endframes;
-        startframes = malloc(ntext * sizeof(int)), endframes = malloc(ntext * sizeof(int));
+        int *startframes = malloc(ntext * sizeof(int));
+        int *endframes = malloc(ntext * sizeof(int));
         int nstart = vsapi->propNumElements(in, "start");
         int nend = vsapi->propNumElements(in, "end");
         int nspan = min(nstart, nend);
@@ -309,7 +310,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
             char start[BUFFER_SIZE] = { 0 }, end[BUFFER_SIZE] = { 0 };
             if (!frameToTime(startframes[i], fi->vi->fpsNum, fi->vi->fpsDen, start, BUFFER_SIZE) ||
                 !frameToTime(endframes[i], fi->vi->fpsNum, fi->vi->fpsDen, end, BUFFER_SIZE)) {
-                sprintf(e, "AssRender: Unable to calculate %s time", start[0] ? "end" : "start");
+                snprintf(e, 256, "AssRender: Unable to calculate %s time", start[0] ? "end" : "start");
                 goto clean;
             }
             int dialogue_space = 32 + strlen(start) + strlen(end) + text_lengths[i];
@@ -366,8 +367,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     }
 
     if (!ass) {
-        sprintf(e, "AssRender: unable to parse ass text");
-        vsapi->setError(out, e);
+        vsapi->setError(out, "AssRender: unable to parse ass text");
         return;
     }
 
@@ -378,7 +378,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         FILE* fh = open_utf8_filename(vfr, "r");
 
         if (!fh) {
-            sprintf(e, "AssRender: could not read timecodes file '%s'", vfr);
+            snprintf(e, 256, "AssRender: could not read timecodes file '%s'", vfr);
             vsapi->setError(out, e);
             return;
         }
@@ -386,7 +386,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         data->isvfr = 1;
 
         if (fscanf(fh, "# timecode format v%d", &ver) != 1) {
-            sprintf(e, "AssRender: invalid timecodes file '%s'", vfr);
+            snprintf(e, 256, "AssRender: invalid timecodes file '%s'", vfr);
             vsapi->setError(out, e);
             return;
         }
