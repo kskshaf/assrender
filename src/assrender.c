@@ -175,7 +175,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     VS_FilterInfo* fi = malloc(sizeof(VS_FilterInfo));
     fi->node = vsapi->propGetNode(in, "clip", 0, NULL);
     fi->vi = vsapi->getVideoInfo(fi->node);
-    char e[250];
+    char e[256] = {0};
     int err = 0;
 
     const char* vfr = vsapi->propGetData(in, "vfr", 0, &err);
@@ -265,18 +265,64 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     }
     else {// if (!strcmp(userData, "Subtitle")){
 #define BUFFER_SIZE 16
-        const char* text = vsapi->propGetData(in, "text", 0, &err);
-        if (err) text = "";
-        const char* style = vsapi->propGetData(in, "style", 0, &err);
-        if (err) style = "sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1";
-        int startframe = vsapi->propGetInt(in, "start", 0, &err);
-        if (err) startframe = 0;
-        int endframe = vsapi->propGetInt(in, "end", 0, &err);
-        if (err) endframe = fi->vi->numFrames;
+        int ntext = vsapi->propNumElements(in, "text");
+        if (ntext < 1)
+            vsapi->setError(out, "No text to be rendered");
+        char **texts;
+        int *text_lengths;
+        texts = malloc(ntext * sizeof(char *));
+        text_lengths = malloc(ntext * sizeof(int));
+        for (int i = 0; i < ntext; i++) {
+            texts[i] = vsapi->propGetData(in, "text", i, &err);
+            if (err) texts[i] = "";
+            texts[i] = strrepl(texts[i], "\n", "\\N");
+            text_lengths[i] = strlen(texts[i]);
+        }
 
-        char* str, * text_copy, x[BUFFER_SIZE], y[BUFFER_SIZE], start[BUFFER_SIZE] = { 0 }, end[BUFFER_SIZE] = { 0 };
-        size_t siz;
-        const char* fmt = "[Script Info]\n"
+        const char *style = vsapi->propGetData(in, "style", 0, &err);
+        if (err) style = "sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1";
+
+        int *startframes, *endframes;
+        startframes = malloc(ntext * sizeof(int)), endframes = malloc(ntext * sizeof(int));
+        int nstart = vsapi->propNumElements(in, "start");
+        int nend = vsapi->propNumElements(in, "end");
+        int nspan = min(nstart, nend);
+        if (nspan < 1) {
+            for (int i = 0; i < ntext; i++)
+                startframes[i] = 0, endframes[i] = fi->vi->numFrames;
+        }
+        else {
+            for (int i = 0; i < nspan; i++) {
+                startframes[i] = vsapi->propGetInt(in, "start", i, &err);
+                if (err) startframes[i] = 0;
+                endframes[i] = vsapi->propGetInt(in, "end", i, &err);
+                if (err) endframes[i] = fi->vi->numFrames;
+            }
+            for (int i = nspan; i < ntext; ++i) {
+                startframes[i] = startframes[nspan - 1];
+                endframes[i] = endframes[nspan - 1];
+            }
+        }
+
+        int full_dialogues_length = 0;
+        for (int i = 0; i < ntext; i++) {
+            char start[BUFFER_SIZE] = { 0 }, end[BUFFER_SIZE] = { 0 };
+            if (!frameToTime(startframes[i], fi->vi->fpsNum, fi->vi->fpsDen, start, BUFFER_SIZE) ||
+                !frameToTime(endframes[i], fi->vi->fpsNum, fi->vi->fpsDen, end, BUFFER_SIZE)) {
+                sprintf(e, "AssRender: Unable to calculate %s time", start[0] ? "end" : "start");
+                goto clean;
+            }
+            int dialogue_space = 32 + strlen(start) + strlen(end) + text_lengths[i];
+            char *tmp = malloc(dialogue_space);
+            snprintf(tmp, dialogue_space, "Dialogue: 0,%s,%s,Default,,0,0,0,,%s\n", start, end, texts[i]);
+            free(texts[i]);
+            texts[i] = tmp;
+            text_lengths[i] = dialogue_space - 1;
+            full_dialogues_length += text_lengths[i];
+        }
+
+        char x[BUFFER_SIZE], y[BUFFER_SIZE];
+        const char *fmt = "[Script Info]\n"
             "ScriptType: v4.00+\n"
             "PlayResX: %s\n"
             "PlayResY: %s\n"
@@ -284,31 +330,38 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
             "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
             "Style: Default,%s\n"
             "[Events]\n"
-            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
-            "Dialogue: 0,%s,%s,Default,,0,0,0,,%s\n";
+            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n";
 
         snprintf(x, BUFFER_SIZE, "%d", fi->vi->width);
         snprintf(y, BUFFER_SIZE, "%d", fi->vi->height);
 
-        if (!frameToTime(startframe, fi->vi->fpsNum, fi->vi->fpsDen, start, BUFFER_SIZE) ||
-            !frameToTime(endframe, fi->vi->fpsNum, fi->vi->fpsDen, end, BUFFER_SIZE)) {
-            sprintf(e, "AssRender: Unable to calculate %s time", start[0] ? "end" : "start");
-            vsapi->setError(out, e);
-            return;
+        size_t siz = (412 + strlen(x) + strlen(y) + strlen(style) + full_dialogues_length) * sizeof(char);
+
+        char *final_text = malloc(siz);
+        snprintf(final_text, siz, fmt, x, y, style);
+
+        int pos = strlen(final_text);
+        for (int i = 0; i < ntext; i++) {
+            memcpy(final_text + pos, texts[i], text_lengths[i]);
+            pos += text_lengths[i];
         }
+        final_text[pos] = 0;
 
-        text_copy = strrepl(text, "\n", "\\N");
+        ass = ass_read_memory(data->ass_library, final_text, pos, "UTF-8");
 
-        siz = (strlen(fmt) + strlen(x) + strlen(y) + strlen(style) + strlen(start) + strlen(end) + strlen(text_copy)) * sizeof(char);
+        free(final_text);
 
-        str = malloc(siz);
-        snprintf(str, siz, fmt, x, y, style, start, end, text_copy);
+    clean:
+        free(startframes);
+        free(endframes);
+        free(text_lengths);
+        for (int i = 0; i < ntext; i++)
+            free(texts[i]);
+        free(texts);
 
-        free(text_copy);
+        if (*e)
+            vsapi->setError(out, e);
 
-        ass = ass_read_memory(data->ass_library, str, strlen(str), "UTF-8");
-
-        free(str);
 #undef BUFFER_SIZE
     }
 
@@ -518,10 +571,10 @@ void VS_CC VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction r
         assrender_create_vs, "TextSub", plugin);
     registerFunc("Subtitle",
         "clip:clip;"
-        "text:data;"
+        "text:data[];"
         "style:data:opt;"
-        "start:int:opt;"
-        "end:int:opt;"
+        "start:int[]:opt;"
+        "end:int[]:opt;"
         COMMON_PARAMS
         assrender_create_vs, "Subtitle", plugin);
 }
