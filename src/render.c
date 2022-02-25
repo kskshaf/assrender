@@ -900,7 +900,9 @@ const VSFrameRef* VS_CC assrender_get_frame_vs(int n, int activationReason, void
         int64_t ts;
         int changed;
 
-        VSFrameRef* src = vsapi->getFrameFilter(n, p->node, frameCtx);
+        const VSFrameRef* src = vsapi->getFrameFilter(n, p->node, frameCtx);
+        VSFrameRef *dst = vsapi->copyFrame(src, core);
+        vsapi->freeFrame(src);
 
         if (!ud->isvfr) {
             // it’s a casting party!
@@ -919,22 +921,22 @@ const VSFrameRef* VS_CC assrender_get_frame_vs(int n, int activationReason, void
             if (p->vi->format->colorFamily != cmCompat && !ud->greyscale) {
                 if (p->vi->format->colorFamily == cmRGB) {
                     // planar RGB as 444
-                    data[0] = vsapi->getWritePtr(src, 0);
-                    data[1] = vsapi->getWritePtr(src, 1);
-                    data[2] = vsapi->getWritePtr(src, 2);
-                    pitch[0] = vsapi->getStride(src, 0);
+                    data[0] = vsapi->getWritePtr(dst, 0);
+                    data[1] = vsapi->getWritePtr(dst, 1);
+                    data[2] = vsapi->getWritePtr(dst, 2);
+                    pitch[0] = vsapi->getStride(dst, 0);
                 }
                 else {
-                    data[0] = vsapi->getWritePtr(src, 0);
-                    data[1] = vsapi->getWritePtr(src, 1);
-                    data[2] = vsapi->getWritePtr(src, 2);
-                    pitch[0] = vsapi->getStride(src, 0);
-                    pitch[1] = vsapi->getStride(src, 1);
+                    data[0] = vsapi->getWritePtr(dst, 0);
+                    data[1] = vsapi->getWritePtr(dst, 1);
+                    data[2] = vsapi->getWritePtr(dst, 2);
+                    pitch[0] = vsapi->getStride(dst, 0);
+                    pitch[1] = vsapi->getStride(dst, 1);
                 }
             }
             else {
-                data[0] = vsapi->getWritePtr(src, 0);
-                pitch[0] = vsapi->getStride(src, 0);
+                data[0] = vsapi->getWritePtr(dst, 0);
+                pitch[0] = vsapi->getStride(dst, 0);
             }
 
             height = p->vi->height;
@@ -948,7 +950,7 @@ const VSFrameRef* VS_CC assrender_get_frame_vs(int n, int activationReason, void
             ud->apply(ud->sub_img, data, pitch, width, height);
         }
 
-        return src;
+        return dst;
     }
     return NULL;
 }
