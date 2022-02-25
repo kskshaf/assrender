@@ -16,7 +16,7 @@ jobs:
           cmake --build build --clean-first
 
   build-mingw:
-    runs-on: windows-latest
+    runs-on: windows-2019
     defaults:
       run:
         shell: msys2 {0}
@@ -34,7 +34,7 @@ jobs:
           cmake --build build --clean-first
 
   build-win:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
       - name: install submodules and nasm
@@ -46,9 +46,9 @@ jobs:
       - name: add msbuild to PATH
         uses: microsoft/setup-msbuild@v1
       - name: build-x86
-        run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x86
+        run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.19041.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x86
       - name: build-x64
-        run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x64
+        run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.19041.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x64
       - name: copy
         run: cmake -E copy "bin\Release_Win32\assrender.dll" dist\x86\assrender.dll && cmake -E copy "bin\Release_x64\assrender.dll" dist\x64\assrender.dll 
       - name: upload
