@@ -3,14 +3,13 @@ project(assrender)
 
 include(GNUInstallDirs)
 
-add_subdirectory(src)
-
 if(MINGW)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libgcc -Wl,--add-stdcall-alias")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wpedantic")
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "-s")
-    set(CMAKE_C_FLAGS_RELEASE "-O3")
 endif()
+
+add_subdirectory(src)
 
 # uninstall target
 configure_file(
