@@ -87,9 +87,9 @@ void msg_callback(int level, const char* fmt, va_list va, void* data)
     fprintf(stderr, "\n");
 }
 
-int init_ass(int w, int h, double scale, double line_spacing,
-             ASS_Hinting hinting, double dar, double sar, int top,
-             int bottom, int left, int right, int verbosity,
+int init_ass(int w, int h, double scale, double line_spacing, ASS_Hinting hinting,
+             int frame_width, int frame_height, double dar, double sar,
+             int top, int bottom, int left, int right, int verbosity,
              const char* fontdir, udata* ud)
 {
     ASS_Renderer* ass_renderer;
@@ -109,16 +109,26 @@ int init_ass(int w, int h, double scale, double line_spacing,
 
     ass_set_font_scale(ass_renderer, scale);
     ass_set_hinting(ass_renderer, hinting);
-    ass_set_frame_size(ass_renderer, w, h);
-    ass_set_storage_size(ass_renderer, w, h);
     ass_set_margins(ass_renderer, top, bottom, left, right);
     ass_set_use_margins(ass_renderer, 1);
 
     if (line_spacing)
         ass_set_line_spacing(ass_renderer, line_spacing);
 
-    if (dar && sar)
+    if (frame_width && frame_height) {
+        ass_set_frame_size(ass_renderer, frame_width, frame_height);
+        ass_set_storage_size(ass_renderer, w, h);
+    }
+    else if (dar && sar) {
+        ass_set_frame_size(ass_renderer, w, h);
         ass_set_pixel_aspect(ass_renderer, dar / sar);
+    }
+    else {
+        ass_set_frame_size(ass_renderer, w, h);
+#ifdef SET_STORAGE_SIZE_EXPLICITLY_DEFAULT
+        ass_set_storage_size(ass_renderer, w, h);
+#endif
+    }
 
     if (strcmp(fontdir, ""))
         ass_set_fonts_dir(ass_library, fontdir);

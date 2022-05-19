@@ -183,6 +183,8 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     double scale = vsapi->propGetFloat(in, "scale", 0, &err);
     if (err) scale = 1.0;
     double line_spacing = vsapi->propGetFloat(in, "line_spacing", 0, &err);
+    int frame_width = vsapi->propGetInt(in, "frame_width", 0, &err);
+    int frame_height = vsapi->propGetInt(in, "frame_height", 0, &err);
     double dar = vsapi->propGetFloat(in, "dar", 0, &err);
     double sar = vsapi->propGetFloat(in, "sar", 0, &err);
     int top = vsapi->propGetInt(in, "top", 0, &err);
@@ -236,9 +238,12 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 
     data = malloc(sizeof(udata));
 
-    if (!init_ass(fi->vi->width, fi->vi->height, scale, line_spacing,
-        hinting, dar, sar, top, bottom, left, right,
-        debuglevel, fontdir, data)) {
+    if (!init_ass(
+        fi->vi->width, fi->vi->height, scale, line_spacing, hinting,
+        frame_width, frame_height, dar, sar,
+        top, bottom, left, right, debuglevel,
+        fontdir, data)
+    ) {
         vsapi->setError(out, "AssRender: failed to initialize");
         return;
     }
@@ -551,6 +556,8 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         "hinting:int:opt;" \
         "scale:float:opt;" \
         "line_spacing:float:opt;" \
+        "frame_width:int:opt;" \
+        "frame_height:int:opt;" \
         "dar:float:opt;" \
         "sar:float:opt;" \
         "top:int:opt;" \
