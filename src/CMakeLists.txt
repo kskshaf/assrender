@@ -7,6 +7,12 @@ endif()
 set(ProjectName "${PluginName}")
 project(${ProjectName} LANGUAGES C)
 
+OPTION(SET_STORAGE_SIZE_EXPLICITLY,"set storage size when frame size and dar&sar not set", ON)
+
+if (SET_STORAGE_SIZE_EXPLICITLY)
+  add_compile_definitions(SET_STORAGE_SIZE_EXPLICITLY_DEFAULT)
+endif()
+
 set(ASSRender_SRC 
     assrender.c
     assrender.h
