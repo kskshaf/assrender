@@ -28,7 +28,9 @@ Like `sub.TextFile`, `xyvsf.TextSub`
 	
 - `line_spacing`: Line spacing in pixels. Defaults to 1.0 and won’t be scaled with frame size.
 	
-- `dar`, `sar`: Aspect ratio. Of course you need to set both parameters.
+- `frame_width`, `frame_height`: Actual displayed size, provide more information than `dar`&`sar`. Of course you need to set both parameters.
+	
+- `dar`, `sar`: Aspect ratio, less priority than `frame_width`&`frame_height`. You need to set both parameters, too.
 	
 - `top`, `bottom`, `left`, `right`: Margins. They will be added to the frame size and may be negative.
 	
