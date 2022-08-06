@@ -1,10 +1,10 @@
 # AssRender-Vapoursynth
 
-AssRender-Vapoursynth is a Vapoursynth api3 plugin that renders ASS / SSA and SRT (without the HTML-like markup) subtitles, based on the source of pinterf’s fork. It uses libass to render the subtitles, which makes it the fastest, lower memory usage and most correct ASS renderer for Vapoursynth.
+AssRender-Vapoursynth is a Vapoursynth api3 plugin that renders ASS / SSA and SRT (without the HTML-like markup) subtitles, based on the source of pinterf’s fork. It uses libass to render the subtitles, which makes it the fastest, lower memory usage and most correct ASS renderer for Vapoursynth. Now (version >= 0.37.1) it also provides csri interface, you can use it with some support softwares, such as Aegisub.
 
 This also means that it is much more picky about script syntax than VSFilter and friends, so keep that in mind before blaming the filter. Yes, people have reported a lot of errors that were actually the script author’s fault.
 
-## Usage
+## Vapoursynth Usage
 
 Supported video formats:
   - 8-, 10-, 12-, 14- and 16-bit integer
@@ -12,7 +12,7 @@ Supported video formats:
 
 ### TextSub
 
-`assrender.TextSub(clip clip, string file, [string vfr, int hinting=0, float scale=1.0, float line_spacing=1.0, float dar, float sar, int top=0, int bottom=0, int left=0, int right=0, string charset, int debuglevel, string fontdir="", string srt_font="sans-serif", string colorspace])`
+`assrender.TextSub(clip clip, string file, [string vfr, int hinting=0, float scale=1.0, float line_spacing=1.0, float dar, float sar, bool set_default_storage_size=True, int top=0, int bottom=0, int left=0, int right=0, string charset, int debuglevel, string fontdir="", string srt_font="sans-serif", string colorspace])`
 
 Like `sub.TextFile`, `xyvsf.TextSub`
 
@@ -31,6 +31,8 @@ Like `sub.TextFile`, `xyvsf.TextSub`
 - `frame_width`, `frame_height`: Actual displayed size, provide more information than `dar`&`sar`. Of course you need to set both parameters.
 	
 - `dar`, `sar`: Aspect ratio, less priority than `frame_width`&`frame_height`. You need to set both parameters, too.
+
+- `set_default_storage_size`: Whether to render ASS according to storage size, default is True. It’s behavior is consistent with the latest libass, but it maybe show some incorrect display effects, you can see *[Fix rendering with libass to match xy-VSFilter](https://github.com/wangqr/Aegisub/pull/134)* for details.
 	
 - `top`, `bottom`, `left`, `right`: Margins. They will be added to the frame size and may be negative.
 	
@@ -61,7 +63,7 @@ Like `sub.TextFile`, `xyvsf.TextSub`
 
 ### Subtitle
 
-`assrender.Subtitle(clip clip, string[] text, [string style="sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1", int[] start, int[] end, string vfr, int hinting=0, float scale=1.0, float line_spacing=1.0, float dar, float sar, int top=0, int bottom=0, int left=0, int right=0, string charset, int debuglevel, string fontdir="", string srt_font="sans-serif", string colorspace])`
+`assrender.Subtitle(clip clip, string[] text, [string style="sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1", int[] start, int[] end, string vfr, int hinting=0, float scale=1.0, float line_spacing=1.0, float dar, float sar, bool set_default_storage_size=True, int top=0, int bottom=0, int left=0, int right=0, string charset, int debuglevel, string fontdir="", string srt_font="sans-serif", string colorspace])`
 
 Like `sub.Subtitle`, it can render single line or multiline subtile string instead of a subtitle file.
 
@@ -77,6 +79,10 @@ Like `sub.Subtitle`, it can render single line or multiline subtile string inste
   - If you dont’t render multiline subtitles, `std.Loop` maybe faster.
 
 Other parameters are same as `assrender.TextSub`, but not necessarily useful, such as `srt_font`.
+
+## Csri
+
+It have two csri render names: `assrender_textsub` and `assrender_ob_textsub`. `ob` means old behavior, their differences can be referred to description of `set_default_storage_size` in vapoursynth usage.
 
 ## Build instructions
 
