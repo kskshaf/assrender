@@ -15,6 +15,18 @@ jobs:
           cmake -B build -S .
           cmake --build build --clean-first
 
+  build-macos:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - name: install deps
+        run: |
+          brew install cmake libass
+      - name: build
+        run: |
+          cmake -B build -S .
+          cmake --build build --clean-first
+
   build-mingw:
     runs-on: windows-2019
     defaults:
