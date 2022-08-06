@@ -2,7 +2,13 @@
 #include "render.h"
 #include "sub.h"
 
-#define CSRIAPI __declspec(dllexport)
+#if defined(_WIN32)
+#    define CSRIAPI __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#    define CSRIAPI __attribute__((visibility("default")))
+#else
+#    define CSRIAPI
+#endif
 #define CSRI_OWN_HANDLES
 typedef const char *csri_rend;
 typedef struct {
@@ -183,7 +189,7 @@ static struct csri_info csri_assrender_info = {
     .name = "assrender_textsub", // name
     .specific = "0.37.1", // version (assumed version number, svn revision, patchlevel)
 #endif
-    .longname = "assrender/TextSub (pingplug¡¢pinterf¡¢Masaiki)", // longname
+    .longname = "assrender/TextSub (pingplugï¿½ï¿½pinterfï¿½ï¿½Masaiki)", // longname
     .author = "pingplug", // author
     .copyright = "Copyright (c) 2012-2015 by pingplug, 2021 by pinterf, 2021-2022 by Masaiki" // copyright
 };
