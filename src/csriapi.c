@@ -10,16 +10,21 @@
 #    define CSRIAPI
 #endif
 #define CSRI_OWN_HANDLES
-typedef const char *csri_rend;
+typedef enum {
+    assrender,
+    assrender_ob
+} csri_rend;
 typedef struct {
     udata *ud;
     int64_t width, height;
     bool frame_requested;
+    bool set_default_storage_size;
 } csri_inst;
 
 #include "csri.h"
 
-static csri_rend csri_assrender = "assrender";
+static csri_rend csri_assrender = assrender;
+static csri_rend csri_assrender_ob = assrender_ob;
 
 CSRIAPI csri_inst *csri_open_file(csri_rend *renderer, const char *filename, struct csri_openflag *flags)
 {
@@ -28,7 +33,9 @@ CSRIAPI csri_inst *csri_open_file(csri_rend *renderer, const char *filename, str
     inst->ud = malloc(sizeof(udata));
     memset(inst->ud, 0, sizeof(udata));
 
-    if (init_ass(0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", inst->ud)) {
+    inst->set_default_storage_size = *renderer != csri_assrender_ob;
+
+    if (init_ass(0, 0, 1.0, 0, ASS_HINTING_NONE, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, "", inst->ud)) {
         ASS_Track *ass = ass_read_file(inst->ud->ass_library, filename, (char *)"utf-8");
         if (ass) {
             inst->ud->ass = ass;
@@ -50,7 +57,9 @@ CSRIAPI csri_inst *csri_open_mem(csri_rend *renderer, const void *data, size_t l
     inst->ud = malloc(sizeof(udata));
     memset(inst->ud, 0, sizeof(udata));
 
-    if (init_ass(0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", inst->ud)) {
+    inst->set_default_storage_size = *renderer != csri_assrender_ob;
+
+    if (init_ass(0, 0, 1.0, 0, ASS_HINTING_NONE, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, "", inst->ud)) {
         ASS_Track *ass = ass_read_memory(inst->ud->ass_library, data, length, (char *)"utf-8");
         if (ass) {
             inst->ud->ass = ass;
@@ -117,7 +126,8 @@ CSRIAPI int csri_request_fmt(csri_inst *inst, const struct csri_fmt *fmt)
     FillMatrix(&inst->ud->mx, MATRIX_NONE);
 
     ass_set_frame_size(inst->ud->ass_renderer, inst->width, inst->height);
-    ass_set_storage_size(inst->ud->ass_renderer, inst->width, inst->height);
+    if (inst->set_default_storage_size)
+        ass_set_storage_size(inst->ud->ass_renderer, inst->width, inst->height);
 
     const int bits_per_pixel = 8;
     const int pixelsize = 32;
@@ -193,27 +203,47 @@ static struct csri_info csri_assrender_info = {
     .author = "pingplug", // author
     .copyright = "Copyright (c) 2012-2015 by pingplug, 2021 by pinterf, 2021-2022 by Masaiki" // copyright
 };
+static struct csri_info csri_assrender_ob_info = {
+#ifdef _DEBUG
+    .name = "assrender_ob_textsub_debug", // name
+    .specific = "0.37.1", // version (assumed version number, svn revision, patchlevel)
+#else
+    .name = "assrender_ob_textsub", // name
+    .specific = "0.37.1", // version (assumed version number, svn revision, patchlevel)
+#endif
+    .longname = "assrender/TextSub (pingplug & pinterf & Masaiki)", // longname
+    .author = "pingplug", // author
+    .copyright = "Copyright (c) 2012-2015 by pingplug, 2021 by pinterf, 2021-2022 by Masaiki" // copyright
+};
 CSRIAPI struct csri_info *csri_renderer_info(csri_rend *rend)
 {
-    return &csri_assrender_info;
+    switch (*rend)
+    {
+    case assrender:
+        return &csri_assrender_info;
+    case assrender_ob:
+        return &csri_assrender_ob_info;
+    default:
+        return NULL;
+    }
 }
-// Only one supported, obviously
 CSRIAPI csri_rend *csri_renderer_byname(const char *name, const char *specific)
 {
-    if (strcmp(name, csri_assrender_info.name))
-        return 0;
-    if (specific && strcmp(specific, csri_assrender_info.specific))
-        return 0;
-    return &csri_assrender;
+    if (strcmp(name, csri_assrender_info.name) == 0 && (!specific || strcmp(specific, csri_assrender_info.specific) == 0))
+        return &csri_assrender;
+    if (strcmp(name, csri_assrender_ob_info.name) == 0 && (!specific || strcmp(specific, csri_assrender_ob_info.specific) == 0))
+        return &csri_assrender_ob;
+    return NULL;
 }
-// Still just one
 CSRIAPI csri_rend *csri_renderer_default()
 {
     return &csri_assrender;
 }
-// And no further
 CSRIAPI csri_rend *csri_renderer_next(csri_rend *prev)
 {
-    return 0;
+    if (*prev == csri_assrender) {
+        return &csri_assrender_ob;
+    }
+    return NULL;
 }
 

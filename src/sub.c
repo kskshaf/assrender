@@ -88,7 +88,7 @@ void msg_callback(int level, const char* fmt, va_list va, void* data)
 }
 
 int init_ass(int w, int h, double scale, double line_spacing, ASS_Hinting hinting,
-             int frame_width, int frame_height, double dar, double sar, bool ass_storage_size,
+             int frame_width, int frame_height, double dar, double sar, int set_default_storage_size,
              int top, int bottom, int left, int right, int verbosity,
              const char* fontdir, udata* ud)
 {
@@ -123,11 +123,11 @@ int init_ass(int w, int h, double scale, double line_spacing, ASS_Hinting hintin
         ass_set_frame_size(ass_renderer, w, h);
         ass_set_pixel_aspect(ass_renderer, dar / sar);
     }
-    else if (ass_storage_size) {
-        ass_set_storage_size(ass_renderer, w, h);
-    }
     else {
         ass_set_frame_size(ass_renderer, w, h);
+        if (set_default_storage_size) {
+            ass_set_storage_size(ass_renderer, w, h);
+        }
     }
 
     if (strcmp(fontdir, ""))
