@@ -28,7 +28,7 @@ CSRIAPI csri_inst *csri_open_file(csri_rend *renderer, const char *filename, str
     inst->ud = malloc(sizeof(udata));
     memset(inst->ud, 0, sizeof(udata));
 
-    if (init_ass(0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", inst->ud)) {
+    if (init_ass(0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", inst->ud)) {
         ASS_Track *ass = ass_read_file(inst->ud->ass_library, filename, (char *)"utf-8");
         if (ass) {
             inst->ud->ass = ass;
@@ -50,7 +50,7 @@ CSRIAPI csri_inst *csri_open_mem(csri_rend *renderer, const void *data, size_t l
     inst->ud = malloc(sizeof(udata));
     memset(inst->ud, 0, sizeof(udata));
 
-    if (init_ass(0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", inst->ud)) {
+    if (init_ass(0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", inst->ud)) {
         ASS_Track *ass = ass_read_memory(inst->ud->ass_library, data, length, (char *)"utf-8");
         if (ass) {
             inst->ud->ass = ass;

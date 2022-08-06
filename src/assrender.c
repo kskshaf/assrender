@@ -187,6 +187,8 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     int frame_height = vsapi->propGetInt(in, "frame_height", 0, &err);
     double dar = vsapi->propGetFloat(in, "dar", 0, &err);
     double sar = vsapi->propGetFloat(in, "sar", 0, &err);
+    bool ass_storage_size = vsapi->propGetInt(in, "ass_storage_size", 0, &err);
+    if (err) ass_storage_size = true;
     int top = vsapi->propGetInt(in, "top", 0, &err);
     int bottom = vsapi->propGetInt(in, "bottom", 0, &err);
     int left = vsapi->propGetInt(in, "left", 0, &err);
@@ -240,7 +242,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
 
     if (!init_ass(
         fi->vi->width, fi->vi->height, scale, line_spacing, hinting,
-        frame_width, frame_height, dar, sar,
+        frame_width, frame_height, dar, sar, ass_storage_size,
         top, bottom, left, right, debuglevel,
         fontdir, data)
     ) {
@@ -560,6 +562,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         "frame_height:int:opt;" \
         "dar:float:opt;" \
         "sar:float:opt;" \
+        "ass_storage_size:int:opt;" \
         "top:int:opt;" \
         "bottom:int:opt;" \
         "left:int:opt;" \
