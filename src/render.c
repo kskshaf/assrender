@@ -240,11 +240,7 @@ void apply_rgba(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t wid
     srcB = sub_img[3];
     srcA = sub_img[0];
 
-    // Move destination pointer to the bottom right corner of the
-    // bounding box that contains the current overlay bitmap.
-    // Remember that avisynth RGB bitmaps are upside down, hence we
-    // need to render upside down.
-    dstB = data[0] + pitch[0] * (height - 1);
+    dstB = data[0];
     dstG = dstB + 1;
     dstR = dstB + 2;
     dstA = dstB + 3;
@@ -265,10 +261,10 @@ void apply_rgba(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t wid
         srcG += width;
         srcB += width;
         srcA += width;
-        dstR -= pitch[0];
-        dstG -= pitch[0];
-        dstB -= pitch[0];
-        dstA -= pitch[0];
+        dstR += pitch[0];
+        dstG += pitch[0];
+        dstB += pitch[0];
+        dstA += pitch[0];
     }
 }
 

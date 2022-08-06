@@ -171,12 +171,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\assrender.h" />
+    <ClInclude Include="src\csri.h" />
     <ClInclude Include="src\render.h" />
     <ClInclude Include="src\sub.h" />
     <ClInclude Include="src\timecodes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\assrender.c" />
+    <ClCompile Include="src\csriapi.c" />
     <ClCompile Include="src\render.c" />
     <ClCompile Include="src\sub.c" />
     <ClCompile Include="src\timecodes.c" />

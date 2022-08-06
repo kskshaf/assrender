@@ -30,6 +30,9 @@
     <ClInclude Include="src\timecodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\csri.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\assrender.c">
@@ -44,6 +47,9 @@
     <ClCompile Include="src\timecodes.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\csriapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\ASSRender.rc">
@@ -52,9 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\assrender.def">
-      <Filter>Include</Filter>
-    </None>
-    <None Include="src\assrender64.def">
       <Filter>Include</Filter>
     </None>
   </ItemGroup>
