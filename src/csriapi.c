@@ -189,7 +189,7 @@ static struct csri_info csri_assrender_info = {
     .name = "assrender_textsub", // name
     .specific = "0.37.1", // version (assumed version number, svn revision, patchlevel)
 #endif
-    .longname = "assrender/TextSub (pingplug��pinterf��Masaiki)", // longname
+    .longname = "assrender/TextSub (pingplug & pinterf & Masaiki)", // longname
     .author = "pingplug", // author
     .copyright = "Copyright (c) 2012-2015 by pingplug, 2021 by pinterf, 2021-2022 by Masaiki" // copyright
 };
