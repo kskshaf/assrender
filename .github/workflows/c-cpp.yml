@@ -62,6 +62,10 @@ jobs:
           git submodule update --init --recursive --remote
           git clone https://github.com/ShiftMediaProject/VSNASM.git
           .\VSNASM\install_script.bat
+      - name: force /MT build
+        shell: bash
+        run: |
+          sed -i -e 's|<ClCompile>|&<RuntimeLibrary>MultiThreaded</RuntimeLibrary>|g' SMP/*/SMP/*.vcxproj
       - name: add msbuild to PATH
         uses: microsoft/setup-msbuild@v1
       - name: build
