@@ -66,6 +66,7 @@ jobs:
         shell: bash
         run: |
           sed -i -e 's|<ClCompile>|&<RuntimeLibrary>MultiThreaded</RuntimeLibrary>|g' SMP/*/SMP/*.vcxproj
+          sed -i -e 's|<ClCompile>|&<RuntimeLibrary>MultiThreaded</RuntimeLibrary>|g' assrender.vcxproj
       - name: add msbuild to PATH
         uses: microsoft/setup-msbuild@v1
       - name: build
