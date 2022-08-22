@@ -29,20 +29,20 @@ void FillMatrix(ConversionMatrix* matrix, matrix_type mt);
 void make_sub_img(ASS_Image* img, uint8_t** sub_img, uint32_t width, int bits_per_pixel, int rgb, ConversionMatrix *mx);
 void make_sub_img16(ASS_Image* img, uint8_t** sub_img, uint32_t width, int bits_per_pixel, int rgb, ConversionMatrix* mx);
 
-void apply_rgba(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_rgb(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_rgb48(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_rgb64(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_yuy2(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_yv12(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_yv16(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_yv24(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_y8(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_yuv420(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_yuv422(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_yuv444(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_y(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
-void apply_yv411(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
+void apply_rgba(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_rgb(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_rgb48(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_rgb64(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_yuy2(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_yv12(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_yv16(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_yv24(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_y8(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_yuv420(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_yuv422(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_yuv444(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_y(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
+void apply_yv411(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
 
 const VSFrameRef* VS_CC assrender_get_frame_vs(int n, int activationReason, void** instanceData, void** frameData, VSFrameContext* frameCtx, VSCore* core, const VSAPI* vsapi);
 

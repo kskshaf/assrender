@@ -42,7 +42,7 @@ typedef enum {
   MATRIX_PC240M
 } matrix_type;
 
-typedef void (* fPixel)(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height);
+typedef void (* fPixel)(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height);
 typedef void (* fMakeSubImg)(ASS_Image* img, uint8_t** sub_img, uint32_t width, int bits_per_pixel, int rgb, ConversionMatrix* m);
 
 void col2yuv(uint32_t* c, uint8_t* y, uint8_t* u, uint8_t* v, ConversionMatrix* m);

@@ -230,7 +230,7 @@ void make_sub_img16(ASS_Image* img, uint8_t** sub_img0, uint32_t width, int bits
   }
 }
 
-void apply_rgba(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_rgba(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height)
 {
     uint8_t *srcA, *srcR, *srcG, *srcB, *dstA, *dstR, *dstG, *dstB;
     uint32_t i, j, k, dsta;
@@ -268,7 +268,7 @@ void apply_rgba(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t wid
     }
 }
 
-void apply_rgb(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_rgb(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height)
 {
     uint8_t *srcR, *srcG, *srcB, *srcA, *dstR, *dstG, *dstB;
     uint32_t i, j, k;
@@ -278,11 +278,7 @@ void apply_rgb(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t widt
     srcB = sub_img[3];
     srcA = sub_img[0];
 
-    // Move destination pointer to the bottom right corner of the
-    // bounding box that contains the current overlay bitmap.
-    // Remember that avisynth RGB bitmaps are upside down, hence we
-    // need to render upside down.
-    dstB = data[0] + pitch[0] * (height - 1);
+    dstB = data[0];
     dstG = dstB + 1;
     dstR = dstB + 2;
 
@@ -300,13 +296,13 @@ void apply_rgb(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t widt
         srcG += width;
         srcB += width;
         srcA += width;
-        dstR -= pitch[0];
-        dstG -= pitch[0];
-        dstB -= pitch[0];
+        dstR += pitch[0];
+        dstG += pitch[0];
+        dstB += pitch[0];
     }
 }
 
-void apply_rgb64(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_rgb64(uint8_t** sub_img_8, uint8_t** data_8, int32_t* pitch, uint32_t width, uint32_t height)
 {
   uint16_t* srcA, * srcR, * srcG, * srcB, * dstA, * dstR, * dstG, * dstB;
   uint32_t i, j, k, dsta;
@@ -320,11 +316,7 @@ void apply_rgb64(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_
 
   const int pitch0 = pitch[0] / sizeof(uint16_t);
 
-  // Move destination pointer to the bottom right corner of the
-  // bounding box that contains the current overlay bitmap.
-  // Remember that avisynth RGB bitmaps are upside down, hence we
-  // need to render upside down.
-  dstB = data[0] + pitch0 * (height - 1);
+  dstB = data[0];
   // fixme pf: don't use 4 pointers, maybe they are not recognized to optimize out
   dstG = dstB + 1;
   dstR = dstB + 2;
@@ -346,14 +338,14 @@ void apply_rgb64(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_
     srcG += width;
     srcB += width;
     srcA += width;
-    dstR -= pitch0;
-    dstG -= pitch0;
-    dstB -= pitch0;
-    dstA -= pitch0;
+    dstR += pitch0;
+    dstG += pitch0;
+    dstB += pitch0;
+    dstA += pitch0;
   }
 }
 
-void apply_rgb48(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_rgb48(uint8_t** sub_img_8, uint8_t** data_8, int32_t* pitch, uint32_t width, uint32_t height)
 {
   uint16_t* srcR, * srcG, * srcB, * srcA, * dstR, * dstG, * dstB;
   uint32_t i, j, k;
@@ -367,11 +359,7 @@ void apply_rgb48(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_
 
   const int pitch0 = pitch[0] / sizeof(uint16_t);
 
-  // Move destination pointer to the bottom right corner of the
-  // bounding box that contains the current overlay bitmap.
-  // Remember that avisynth RGB bitmaps are upside down, hence we
-  // need to render upside down.
-  dstB = data[0] + pitch0 * (height - 1);
+  dstB = data[0];
   // fixme pf: don't use 3 pointers, maybe they are not recognized to optimize out
   dstG = dstB + 1;
   dstR = dstB + 2;
@@ -390,13 +378,13 @@ void apply_rgb48(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_
     srcG += width;
     srcB += width;
     srcA += width;
-    dstR -= pitch0;
-    dstG -= pitch0;
-    dstB -= pitch0;
+    dstR += pitch0;
+    dstG += pitch0;
+    dstB += pitch0;
   }
 }
 
-void apply_yuy2(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_yuy2(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height)
 {
     uint8_t *srcY0, *srcY1, *srcU0, *srcU1, *srcV0, *srcV1, *srcA0, *srcA1;
     uint8_t *dstY0, *dstU, *dstY1, *dstV;
@@ -445,7 +433,7 @@ void apply_yuy2(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t wid
     }
 }
 
-void apply_yv12(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_yv12(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height)
 {
     uint8_t *srcY00, *srcU00, *srcV00, *srcA00;
     uint8_t *srcY01, *srcU01, *srcV01, *srcA01;
@@ -522,7 +510,7 @@ void apply_yv12(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t wid
     }
 }
 
-void apply_yuv420(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_yuv420(uint8_t** sub_img_8, uint8_t** data_8, int32_t* pitch, uint32_t width, uint32_t height)
 {
   uint16_t* srcY00, * srcU00, * srcV00, * srcA00;
   uint16_t* srcY01, * srcU01, * srcV01, * srcA01;
@@ -608,7 +596,7 @@ void apply_yuv420(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32
   }
 }
 
-void apply_yv411(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_yv411(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height)
 {
   uint8_t* srcY, * srcU, * srcV, * srcA;
   uint8_t* dstY0, * dstV, *dstU;
@@ -653,7 +641,7 @@ void apply_yv411(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t wi
   }
 }
 
-void apply_yv16(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_yv16(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height)
 {
     uint8_t *srcY0, *srcY1, *srcU0, *srcU1, *srcV0, *srcV1, *srcA0, *srcA1;
     uint8_t *dstY0, *dstU, *dstY1, *dstV;
@@ -701,7 +689,7 @@ void apply_yv16(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t wid
     }
 }
 
-void apply_yuv422(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_yuv422(uint8_t** sub_img_8, uint8_t** data_8, int32_t* pitch, uint32_t width, uint32_t height)
 {
   uint16_t* srcY0, * srcY1, * srcU0, * srcU1, * srcV0, * srcV1, * srcA0, * srcA1;
   uint16_t* dstY0, * dstU, * dstY1, * dstV;
@@ -757,7 +745,7 @@ void apply_yuv422(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32
   }
 }
 
-void apply_yv24(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_yv24(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height)
 {
     uint8_t *srcY, *srcU, *srcV, *srcA, *dstY, *dstU, *dstV;
     uint32_t i, j;
@@ -790,7 +778,7 @@ void apply_yv24(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t wid
     }
 }
 
-void apply_yuv444(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_yuv444(uint8_t** sub_img_8, uint8_t** data_8, int32_t* pitch, uint32_t width, uint32_t height)
 {
   // planar RGB as well
   uint16_t* srcY, * srcU, * srcV, * srcA, * dstY, * dstU, * dstV;
@@ -831,7 +819,7 @@ void apply_yuv444(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32
   }
 }
 
-void apply_y8(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_y8(uint8_t** sub_img, uint8_t** data, int32_t* pitch, uint32_t width, uint32_t height)
 {
     uint8_t *srcY, *srcA, *dstY;
     uint32_t i, j;
@@ -854,7 +842,7 @@ void apply_y8(uint8_t** sub_img, uint8_t** data, uint32_t* pitch, uint32_t width
     }
 }
 
-void apply_y(uint8_t** sub_img_8, uint8_t** data_8, uint32_t* pitch, uint32_t width, uint32_t height)
+void apply_y(uint8_t** sub_img_8, uint8_t** data_8, int32_t* pitch, uint32_t width, uint32_t height)
 {
   uint16_t* srcY, * srcA, * dstY;
   uint32_t i, j;
