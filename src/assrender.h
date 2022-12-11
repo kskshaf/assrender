@@ -66,6 +66,7 @@ typedef struct {
 typedef struct {
     VSNodeRef* node;
     const VSVideoInfo* vi;
+    char* prop;
     void* user_data;
 } VS_FilterInfo;
 #endif

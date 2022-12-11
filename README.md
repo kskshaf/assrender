@@ -80,6 +80,17 @@ Like `sub.Subtitle`, it can render single line or multiline subtile string inste
 
 Other parameters are same as `assrender.TextSub`, but not necessarily useful, such as `srt_font`.
 
+### FrameProp
+
+`assrender.FrameProp(clip clip, [string prop="ass", string style="sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1", string vfr, int hinting=0, float scale=1.0, float line_spacing=1.0, float dar, float sar, bool set_default_storage_size=True, int top=0, int bottom=0, int left=0, int right=0, string charset, int debuglevel, string fontdir="", string srt_font="sans-serif", string colorspace])`
+
+`FrameProp` behaves like `Subtitle`, except that the ASS event for a frame comes from the given frame property `prop`, which defaults to `"ass"`. As each frame specifies its own event, there is no need to provide explicit `start`/`end` times like `Subtitle`.
+
+For example, the following code shows the current frame number at the top left corner of each frame for clip c:
+```python
+c.akarin.Text("FrameNum {N}", prop="ass").assrender.FrameProp()
+```
+
 ## Csri
 
 It have two csri render names: `assrender_textsub` and `assrender_ob_textsub`. `ob` means old behavior, their differences can be referred to description of `set_default_storage_size` in vapoursynth usage.

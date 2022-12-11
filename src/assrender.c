@@ -146,7 +146,7 @@ static bool frameToTime(int frame, int64_t fpsNum, int64_t fpsDen, char* str, si
 }
 
 void VS_CC assrender_destroy_vs(void* instanceData, VSCore* core, const VSAPI* vsapi) {
-    const VS_FilterInfo* d = instanceData;
+    VS_FilterInfo* d = instanceData;
     udata* ud = d->user_data;
 
     ass_renderer_done(((udata*)ud)->ass_renderer);
@@ -162,6 +162,7 @@ void VS_CC assrender_destroy_vs(void* instanceData, VSCore* core, const VSAPI* v
         free(((udata*)ud)->timestamp);
 
     free(ud);
+    free(d->prop);
 
     vsapi->freeNode(d->node);
     free(d);
@@ -175,6 +176,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
     VS_FilterInfo* fi = malloc(sizeof(VS_FilterInfo));
     fi->node = vsapi->propGetNode(in, "clip", 0, NULL);
     fi->vi = vsapi->getVideoInfo(fi->node);
+    fi->prop = NULL;
     char e[256] = {0};
     int err = 0;
 
@@ -270,7 +272,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
             ass_read_matrix(fp, tmpcsp);
         }
     }
-    else {// if (!strcmp(userData, "Subtitle")){
+    else if (!strcmp(userData, "Subtitle")){
 #define BUFFER_SIZE 16
         int ntext = vsapi->propNumElements(in, "text");
         if (ntext < 1) {
@@ -366,6 +368,40 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         for (int i = 0; i < ntext; i++)
             free(texts[i]);
         free(texts);
+
+        if (*e)
+            vsapi->setError(out, e);
+
+    } else { // if (!strcmp(userData, "FrameProp")){
+        const char *prop = vsapi->propGetData(in, "prop", 0, &err);
+        if (!prop) prop = "ass";
+        fi->prop = strdup(prop);
+
+        const char *style = vsapi->propGetData(in, "style", 0, &err);
+        if (err) style = "sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1";
+
+        char x[BUFFER_SIZE], y[BUFFER_SIZE];
+        const char *fmt = "[Script Info]\n"
+            "ScriptType: v4.00+\n"
+            "PlayResX: %s\n"
+            "PlayResY: %s\n"
+            "[V4+ Styles]\n"
+            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
+            "Style: Default,%s\n"
+            "[Events]\n"
+            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n";
+
+        snprintf(x, BUFFER_SIZE, "%d", fi->vi->width);
+        snprintf(y, BUFFER_SIZE, "%d", fi->vi->height);
+
+        size_t siz = (strlen(fmt) + strlen(x) + strlen(y) + strlen(style) + 1) * sizeof(char);
+
+        char *final_text = malloc(siz);
+        snprintf(final_text, siz, fmt, x, y, style);
+
+        ass = ass_read_memory(data->ass_library, final_text, strlen(final_text), "UTF-8");
+
+        free(final_text);
 
         if (*e)
             vsapi->setError(out, e);
@@ -587,4 +623,10 @@ void VS_CC VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction r
         "end:int[]:opt;"
         COMMON_PARAMS
         assrender_create_vs, "Subtitle", plugin);
+    registerFunc("FrameProp",
+        "clip:clip;"
+        "prop:data:opt;"
+        "style:data:opt;"
+        COMMON_PARAMS
+        assrender_create_vs, "FrameProp", plugin);
 }

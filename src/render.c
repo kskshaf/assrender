@@ -885,6 +885,33 @@ const VSFrameRef* VS_CC assrender_get_frame_vs(int n, int activationReason, void
         int changed;
 
         const VSFrameRef* src = vsapi->getFrameFilter(n, p->node, frameCtx);
+
+        if (p->prop) {
+            const VSMap *map = vsapi->getFramePropsRO(src);
+            int err;
+            const char *text = vsapi->propGetData(map, p->prop, 0, &err);
+            if (text) {
+                // ReadOrder, Layer, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+                const char *fmt = "%d,0,Default,,0,0,0,,%s\n";
+                int event_space = strlen(fmt) + strlen(text) + 16 + 1;
+                char *tmp = malloc(event_space);
+                snprintf(tmp, event_space, fmt, n, text);
+                int64_t ts, duration;
+                if (!ud->isvfr) {
+                    ts = (int64_t)n * (int64_t)1000 * (int64_t)p->vi->fpsDen / (int64_t)p->vi->fpsNum;
+                    duration = 1000 * (int64_t)p->vi->fpsDen / p->vi->fpsNum;
+                } else {
+                    ts = ud->timestamp[n];
+                    if (n == p->vi->numFrames - 1)
+                        duration = 30; // arbitrary
+                    else
+                        duration = ud->timestamp[n+1] - ud->timestamp[n];
+                }
+                ass_process_chunk(ud->ass, tmp, strlen(tmp), ts, duration);
+                free(tmp);
+            }
+        }
+
         VSFrameRef *dst = vsapi->copyFrame(src, core);
         vsapi->freeFrame(src);
 
