@@ -280,7 +280,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
             return;
         }
         
-        char **texts = malloc(ntext * sizeof(char *));
+        char const ** const texts = malloc(ntext * sizeof(char *));
         int *text_lengths = malloc(ntext * sizeof(int));
         for (int i = 0; i < ntext; i++) {
             texts[i] = vsapi->propGetData(in, "text", i, &err);
@@ -325,7 +325,7 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
             int dialogue_space = 32 + strlen(start) + strlen(end) + text_lengths[i];
             char *tmp = malloc(dialogue_space);
             snprintf(tmp, dialogue_space, "Dialogue: 0,%s,%s,Default,,0,0,0,,%s\n", start, end, texts[i]);
-            free(texts[i]);
+            free((void *)texts[i]);
             texts[i] = tmp;
             text_lengths[i] = dialogue_space - 1;
             full_dialogues_length += text_lengths[i];
@@ -366,8 +366,8 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         free(endframes);
         free(text_lengths);
         for (int i = 0; i < ntext; i++)
-            free(texts[i]);
-        free(texts);
+            free((void *)texts[i]);
+        free((void *)texts);
 
         if (*e)
             vsapi->setError(out, e);
