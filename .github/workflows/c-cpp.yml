@@ -60,7 +60,7 @@ jobs:
         shell: cmd
         run: |
           git submodule update --init --recursive --remote
-          git clone https://github.com/ShiftMediaProject/VSNASM.git
+          git clone https://github.com/ShiftMediaProject/VSNASM.git --branch 0.9
           .\VSNASM\install_script.bat
       - name: force /MT build
         shell: bash
