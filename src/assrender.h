@@ -69,4 +69,6 @@ typedef struct {
     char* prop;
     void* user_data;
 } VS_FilterInfo;
+
+#define ASSRENDER_VERSION "0.38.1"
 #endif

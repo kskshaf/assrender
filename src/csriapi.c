@@ -194,10 +194,10 @@ CSRIAPI void *csri_query_ext(csri_rend *rend, csri_ext_id extname)
 static struct csri_info csri_assrender_info = {
 #ifdef _DEBUG
     .name = "assrender_textsub_debug", // name
-    .specific = "0.37.1", // version (assumed version number, svn revision, patchlevel)
+    .specific = ASSRENDER_VERSION, // version (assumed version number, svn revision, patchlevel)
 #else
     .name = "assrender_textsub", // name
-    .specific = "0.37.1", // version (assumed version number, svn revision, patchlevel)
+    .specific = ASSRENDER_VERSION, // version (assumed version number, svn revision, patchlevel)
 #endif
     .longname = "assrender/TextSub (pingplug & pinterf & Masaiki)", // longname
     .author = "pingplug", // author
@@ -206,10 +206,10 @@ static struct csri_info csri_assrender_info = {
 static struct csri_info csri_assrender_ob_info = {
 #ifdef _DEBUG
     .name = "assrender_ob_textsub_debug", // name
-    .specific = "0.37.1", // version (assumed version number, svn revision, patchlevel)
+    .specific = ASSRENDER_VERSION, // version (assumed version number, svn revision, patchlevel)
 #else
     .name = "assrender_ob_textsub", // name
-    .specific = "0.37.1", // version (assumed version number, svn revision, patchlevel)
+    .specific = ASSRENDER_VERSION, // version (assumed version number, svn revision, patchlevel)
 #endif
     .longname = "assrender/TextSub (pingplug & pinterf & Masaiki)", // longname
     .author = "pingplug", // author
