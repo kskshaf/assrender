@@ -57,19 +57,41 @@ static const char* detect_bom(const char* buf, const size_t bufsize) {
     return "UTF-8";
 }
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-static wchar_t* utf8_to_utf16le(const char* data) {
+#else
+#include <sys/stat.h>
+#endif
+
+#ifdef _WIN32
+static wchar_t *utf8_to_utf16le(const char *data) {
     const int out_size = MultiByteToWideChar(CP_UTF8, 0, data, -1, NULL, 0);
-    wchar_t* out = malloc(out_size * sizeof(wchar_t));
+    wchar_t *out = malloc(out_size * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, data, -1, out, out_size);
     return out;
 }
 #endif
 
+bool file_exists(const char *path) {
+#ifdef _WIN32
+    wchar_t *path_utf16le = utf8_to_utf16le(path);
+    DWORD dwAttrib = GetFileAttributesW(path_utf16le);
+    free(path_utf16le);
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+#else
+    struct stat path_stat;
+    if (stat(path, &path_stat) != 0) {
+        return false;
+    }
+    return S_ISREG(path_stat.st_mode);
+#endif
+}
+
 static FILE* open_utf8_filename(const char* f, const char* m)
 {
-#if defined(_MSC_VER) || defined(__MINGW32__)
+    if (!file_exists(f)) return NULL;
+#ifdef _WIN32
     wchar_t* file_name = utf8_to_utf16le(f);
     wchar_t* mode = utf8_to_utf16le(m);
     FILE* fp = _wfopen(file_name, mode);
@@ -260,10 +282,18 @@ void VS_CC assrender_create_vs(const VSMap* in, VSMap* out, void* userData, VSCo
         }
         if (!strcasecmp(strrchr(f, '.'), ".srt")) {
             FILE* fp = open_utf8_filename(f, "r");
+            if (!fp) {
+                vsapi->setError(out, "AssRender: input file does not exist or is not a regular file");
+                return;
+            }
             ass = parse_srt(fp, data, srt_font);
         }
         else {
             FILE* fp = open_utf8_filename(f, "rb");
+            if (!fp) {
+                vsapi->setError(out, "AssRender: input file does not exist or is not a regular file");
+                return;
+            }
             size_t bufsize;
             char* buf = read_file_bytes(fp, &bufsize);
             if (cs == NULL) cs = detect_bom(buf, bufsize);
