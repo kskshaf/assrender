@@ -24,6 +24,7 @@ install_manifest.txt
 SMP/
 
 #*/build/.vs
+build/*
 */build/Win32
 */build/x64
 Test
