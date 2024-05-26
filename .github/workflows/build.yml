@@ -107,7 +107,7 @@ jobs:
           meson wrap install libpng
           meson wrap install zlib
           
-          meson -Ddefault_library=static -Dbuildtype=release -Dasm=enabled build
+          meson -Ddefault_library=static -Dbuildtype=release -Dasm=enabled -Db_vscrt=static_from_buildtype build
           meson compile -C build
           meson install -C build
 
@@ -120,9 +120,9 @@ jobs:
       - name: build (windows)
         if: matrix.env.os == 'windows-latest'
         run: |
-          cmake -B build -S .
+          cmake -B build -S . -D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
           cd build
-          msbuild /t:Rebuild /m /p:Configuration=Release /p:RuntimeLibrary=MultiThreaded /p:Platform=${{ matrix.arch }} .\assrender.sln
+          msbuild /t:Rebuild /m /p:Configuration=Release /p:Platform=${{ matrix.arch }} .\assrender.sln
       
       - name: set short version
         shell: bash
@@ -133,7 +133,7 @@ jobs:
       - name: upload
         uses: actions/upload-artifact@v4
         with:
-          name: assrender_${{ matrix.env.os }}-${{ matrix.arch }}_${{ env.VERSION }}
+          name: assrender_${{ matrix.env.identifier }}-${{ matrix.arch }}_${{ env.VERSION }}
           path: |
             build/src/libassrender.so
             build/src/Release/assrender.dll
