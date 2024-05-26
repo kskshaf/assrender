@@ -97,88 +97,7 @@ It have two csri render names: `assrender_textsub` and `assrender_ob_textsub`. `
 
 ## Build instructions
 
-### Windows Visual Studio 2019
-
-* Prequisite: vsnasm integration
-  - get VSNASM from https://github.com/ShiftMediaProject/VSNASM
-  - run install_script.bat
-
-* Clone repo
-
-  Clone https://github.com/AmusementClub/assrender from VS IDE or 
-
-      git clone https://github.com/AmusementClub/assrender
-      git submodule update --init --recursive --remote
-
-* Build:
-  Open solution file from IDE
-
-### Windows GCC (mingw installed by msys2)
-
-* Clone repo
-
-      git clone https://github.com/AmusementClub/assrender
-        
-  This environment is not using the git submodules, we need libass as a package.
-  There is no need for submodule update.
-
-* Prequisite: libass package
-
-  - Get package
-
-    Example for x64 version:
-  
-        $ pacman -S mingw64/mingw-w64-x86_64-libass
-
-    Output:
-
-          resolving dependencies...
-          looking for conflicting packages...
-          warning: dependency cycle detected:
-          warning: mingw-w64-x86_64-harfbuzz will be installed before its mingw-w64-x86_64-freetype dependency
-
-          Packages (10) mingw-w64-x86_64-fontconfig-2.13.93-1
-                      mingw-w64-x86_64-freetype-2.10.4-1
-                      mingw-w64-x86_64-fribidi-1.0.10-2
-                      mingw-w64-x86_64-glib2-2.66.4-1
-                      mingw-w64-x86_64-graphite2-1.3.14-2
-                      mingw-w64-x86_64-harfbuzz-2.7.4-1
-                      mingw-w64-x86_64-libpng-1.6.37-3  mingw-w64-x86_64-pcre-8.44-2
-                      mingw-w64-x86_64-wineditline-2.205-3
-                      mingw-w64-x86_64-libass-0.15.0-1
-
-          Total Download Size:    6.92 MiB
-          Total Installed Size:  42.31 MiB
-
-          :: Proceed with installation? [Y/n]
-
-     Choose Y and wait
-
-* Build
-  from the 'build' folder under project root:
-
-      del ..\CMakeCache.txt
-      cmake .. -G "MinGW Makefiles"
-      cmake --build . --config Release --clean-first 
-
-### Linux
-* Clone repo
-
-      git clone https://github.com/AmusementClub/assrender
-      cd assrender
-      cmake -B build -S .
-      cmake --build build --clean-first
-  
-  Remark: submodules are not needed, libass is used as a package.
-
-* Find binaries at
-    
-      build/assrender/libassrender.so
-
-* Install binaries
-
-      cd build
-      sudo make install
+see `.github/workflows/build.yml`
 
 ## Licenses
   For all modules: see msvc/licenses
@@ -187,8 +106,6 @@ It have two csri render names: `assrender_textsub` and `assrender_ob_textsub`. `
 * Doom9 forum: https://forum.doom9.org/showthread.php?t=148926
 * Avisynth wiki: http://avisynth.nl/index.php/AssRender
 * libass original: https://github.com/libass/libass
-* libass submodule used for msvc https://github.com/ShiftMediaProject/libass
-* Aegisub: https://github.com/wangqr/Aegisub
 
 ## Change log
 See https://github.com/AmusementClub/assrender/releases

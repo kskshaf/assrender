@@ -100,7 +100,7 @@ jobs:
           cd ./libass-${{ env.ass_ver }}
           meson wrap update-db
           meson wrap install fribidi
-          meson wrap install fontconfig
+          # meson wrap install fontconfig
           meson wrap install freetype2
           meson wrap install expat
           meson wrap install harfbuzz
