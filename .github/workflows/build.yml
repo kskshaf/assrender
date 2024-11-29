@@ -4,10 +4,10 @@ on: [push]
 
 env:
   fc_ver: 2.14.2
-  ft_ver: 2-13-2
-  hb_ver: 8.3.1
-  fb_ver: 1.0.13
-  ass_ver: 0.17.2
+  ft_ver: 2-13-3
+  hb_ver: 9.0.0
+  fb_ver: 1.0.15
+  ass_ver: 0.17.3
 
 jobs:
   build:
