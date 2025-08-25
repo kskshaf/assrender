@@ -31,7 +31,8 @@ jobs:
       - name: install deps (ubuntu)
         if: matrix.env.os == 'ubuntu-latest'
         run: |
-          sudo apt-get update && sudo apt-get install -y meson ninja-build nasm
+          sudo apt-get update && sudo apt-get install -y ninja-build nasm
+          sudo python3 -m pip install --upgrade meson
           git clone https://gitlab.freedesktop.org/fontconfig/fontconfig.git -b ${{ env.fc_ver }} --depth=1 fontconfig-${{ env.fc_ver }}
           git clone --recurse-submodules https://github.com/freetype/freetype.git -b VER-${{ env.ft_ver }} --depth=1 freetype-${{ env.ft_ver }}
           git clone --recurse-submodules https://github.com/harfbuzz/harfbuzz.git -b ${{ env.hb_ver }} --depth=1 harfbuzz-${{ env.hb_ver }}
@@ -107,7 +108,7 @@ jobs:
           meson wrap install libpng
           meson wrap install zlib
           
-          meson -Ddefault_library=static -Dbuildtype=release -Dasm=enabled -Db_vscrt=static_from_buildtype build
+          meson -Ddefault_library=static -Dbuildtype=release -Dasm=enabled -Db_vscrt=static_from_buildtype -Dc_std=c11 -Dcpp_std=c++17 build
           meson compile -C build
           meson install -C build
 
